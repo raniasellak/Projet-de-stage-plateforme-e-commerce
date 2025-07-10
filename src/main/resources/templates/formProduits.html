@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{template1}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Form Produits</title>
+
+    <link rel="stylesheet" href="/webjars/bootstrap/5.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css">
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+</head>
+
+<body>
+<div layout:fragment="content1">
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Ajouter un Produit</div>
+            <div class="card-body">
+                <form method="post" th:action="@{/save}" th:object="${produit}">
+                    <div class="mb-3">
+                        <label>Nom</label>
+                        <input class="form-control" type="text" th:field="*{nom}">
+                        <span class="text-danger" th:errors="*{nom}"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Description</label>
+                        <input class="form-control" type="text" th:field="*{description}">
+                        <span class="text-danger" th:errors="*{description}"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Prix</label>
+                        <input class="form-control" type="number" step="0.01" th:field="*{prix}">
+                        <span class="text-danger" th:errors="*{prix}"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Quantité</label>
+                        <input class="form-control" type="number" th:field="*{quantite}">
+                        <span class="text-danger" th:errors="*{quantite}"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Catégorie</label>
+                        <input class="form-control" type="text" th:field="*{categorie}">
+                        <span class="text-danger" th:errors="*{categorie}"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Marque</label>
+                        <input class="form-control" type="text" th:field="*{marque}">
+                        <span class="text-danger" th:errors="*{marque}"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                    <a th:href="@{/index}" class="btn btn-secondary">Annuler</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
