@@ -1,4 +1,9 @@
 package ma.Vala.Boutique.security.repo;
 
-public interface AppRoleRepository {
+import ma.Vala.Boutique.security.entities.AppRole;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppRoleRepository extends JpaRepository< AppRole,String> {
+
+
 }

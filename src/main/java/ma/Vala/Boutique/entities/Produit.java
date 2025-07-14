@@ -1,15 +1,11 @@
 package ma.Vala.Boutique.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.Id;
 
 
 @Entity
@@ -36,6 +32,10 @@ public class Produit {
     @Size(max = 255, message = "La description ne doit pas dépasser 255 caractères")
     private String description;
 
+    private String couleur;
+
+    private Integer annee;
+
     @Min(value = 0, message = "La quantité ne peut pas être négative")
     private int quantite;
 
@@ -46,4 +46,9 @@ public class Produit {
     @NotBlank(message = "La marque est obligatoire")
     @Size(max = 50, message = "La marque ne doit pas dépasser 50 caractères")
     private String marque;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+
 }

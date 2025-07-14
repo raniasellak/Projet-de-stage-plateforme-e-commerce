@@ -1,4 +1,4 @@
-package ma.Vala.Boutique.security;
+package ma.Vala.Boutique.security.repo;
 
 import ma.Vala.Boutique.security.entities.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;

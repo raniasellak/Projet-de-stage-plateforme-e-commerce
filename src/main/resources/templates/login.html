@@ -1,10 +1,395 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>Authentication - Agence Premium</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/webjars/bootstrap/5.1.1/css/bootstrap.min.css">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css">
+
+  <style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .login-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 800px;
+        width: 90%;
+        min-height: 450px;
+    }
+
+    .login-form-section {
+        padding: 60px 50px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: white;
+    }
+
+    .login-illustration {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 40px;
+    }
+
+    .illustration-content {
+        text-align: center;
+        max-width: 300px;
+    }
+
+    .car-businessman {
+        width: 200px;
+        height: 180px;
+        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        border-radius: 20px;
+        position: relative;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+    }
+
+    .businessman-icon {
+        width: 60px;
+        height: 60px;
+        background: #424242;
+        border-radius: 50%;
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .businessman-icon::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    .businessman-icon::after {
+        content: '';
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        width: 40px;
+        height: 25px;
+        background: white;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .car-icon {
+        width: 80px;
+        height: 40px;
+        background: #616161;
+        border-radius: 20px;
+        position: relative;
+    }
+
+    .car-icon::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 20px;
+        width: 40px;
+        height: 20px;
+        background: #424242;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .car-icon::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 10px;
+        width: 12px;
+        height: 12px;
+        background: #212121;
+        border-radius: 50%;
+        box-shadow: 48px 0 0 #212121;
+    }
+
+    .welcome-text {
+        color: #424242;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .welcome-text h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #2196f3;
+    }
+
+    .welcome-text p {
+        font-size: 0.95rem;
+        color: #616161;
+        line-height: 1.4;
+    }
+
+    .login-title {
+        color: #424242;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: #424242;
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #9e9e9e;
+    }
+
+    .btn-login {
+        background: #2196f3;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 30px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .btn-login:hover {
+        background: #1976d2;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    }
+
+    .forgot-password {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .forgot-password a {
+        color: #2196f3;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+        color: #1976d2;
+    }
+
+    .social-login {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .social-login-divider {
+        position: relative;
+        margin: 20px 0;
+        color: #9e9e9e;
+        font-size: 0.9rem;
+    }
+
+    .social-login-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e0e0e0;
+    }
+
+    .social-login-divider span {
+        background: white;
+        padding: 0 15px;
+    }
+
+    .social-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .social-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+    }
+
+    .social-btn.google {
+        color: #db4437;
+    }
+
+    .social-btn.facebook {
+        color: #3b5998;
+    }
+
+    .social-btn.linkedin {
+        color: #0077b5;
+    }
+
+    .social-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+        .login-container {
+            margin: 20px;
+            flex-direction: column;
+        }
+
+        .login-form-section {
+            padding: 40px 30px;
+        }
+
+        .login-illustration {
+            padding: 30px;
+        }
+
+        .car-businessman {
+            width: 150px;
+            height: 130px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+    }
+  </style>
 </head>
 <body>
-$END$
+<div class="container-fluid">
+  <div class="login-container">
+    <div class="row g-0 h-100">
+      <!-- Section illustration -->
+      <div class="col-lg-6 login-illustration">
+        <div class="illustration-content">
+          <div class="car-businessman">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="businessman-icon"></div>
+              <div class="car-icon"></div>
+            </div>
+          </div>
+          <div class="welcome-text">
+            <h3>Bienvenue chez Premium Cars</h3>
+            <p>Votre agence de confiance pour l'achat et la vente de véhicules de qualité</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section formulaire -->
+      <div class="col-lg-6">
+        <div class="login-form-section">
+          <h1 class="login-title">Log In</h1>
+
+          <form th:action="@{/login}" method="post">
+            <div class="form-group">
+              <label for="username" class="form-label">Username</label>
+              <input type="text"
+                     class="form-control"
+                     id="username"
+                     name="username"
+                     placeholder="Entrez votre email"
+                     required>
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <input type="password"
+                     class="form-control"
+                     id="password"
+                     name="password"
+                     placeholder="Entrez votre mot de passe"
+                     required>
+            </div>
+
+            <button type="submit" class="btn btn-login">
+              Se connecter
+            </button>
+
+            <div class="forgot-password">
+              <a href="#">Mot de passe oublié ?</a>
+            </div>
+
+            <div class="social-login">
+              <div class="social-login-divider">
+                <span>Ou continuer avec</span>
+              </div>
+              <div class="social-buttons">
+                <a href="#" class="social-btn google">
+                  <i class="bi bi-google"></i>
+                </a>
+                <a href="#" class="social-btn facebook">
+                  <i class="bi bi-facebook"></i>
+                </a>
+                <a href="#" class="social-btn linkedin">
+                  <i class="bi bi-linkedin"></i>
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="/webjars/bootstrap/5.1.1/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

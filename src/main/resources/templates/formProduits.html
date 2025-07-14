@@ -19,8 +19,8 @@
         <div class="card">
             <div class="card-header bg-primary text-white">Ajouter un Produit</div>
             <div class="card-body">
-                <form method="post" th:action="@{/save}" th:object="${produit}">
-                    <div class="mb-3">
+                <form method="post" th:action="@{/admin/save}" th:object="${produit}" enctype="multipart/form-data">
+                <div class="mb-3">
                         <label>Nom</label>
                         <input class="form-control" type="text" th:field="*{nom}">
                         <span class="text-danger" th:errors="*{nom}"></span>
@@ -56,8 +56,25 @@
                         <span class="text-danger" th:errors="*{marque}"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="couleur" class="form-label">Couleur</label>
+                        <input type="text" class="form-control" id="couleur" th:field="*{couleur}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="annee" class="form-label">Année</label>
+                        <input type="number" class="form-control" id="annee" th:field="*{annee}" min="1900" max="2025">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="imageFile" class="form-label">Image du produit</label>
+                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
+                        <div class="form-text">Formats acceptés : JPG, PNG, GIF (max 10MB)</div>
+                    </div>
+
+
                     <button type="submit" class="btn btn-success">Enregistrer</button>
-                    <a th:href="@{/index}" class="btn btn-secondary">Annuler</a>
+                    <a th:href="@{/user/index}" class="btn btn-secondary">Annuler</a>
                 </form>
             </div>
         </div>

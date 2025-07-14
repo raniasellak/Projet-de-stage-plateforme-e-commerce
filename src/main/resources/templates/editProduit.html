@@ -19,9 +19,10 @@
         <div class="card">
             <div class="card-header bg-warning text-dark">Modifier le Produit</div>
             <div class="card-body">
-                <form method="post" th:action="@{save(page=${page} ,keyword=${keyword})}" th:object="${produit}">
+                <form method="post" th:action="@{/admin/save(page=${page},keyword=${keyword})}" th:object="${produit}" enctype="multipart/form-data">
 
-                    <!-- Champ ID affiché et non modifiable -->
+
+                <!-- Champ ID affiché et non modifiable -->
                     <div class="mb-3">
                         <label>ID :</label>
                         <label th:text="${produit.id}"></label>
@@ -64,8 +65,35 @@
                         <span class="text-danger" th:errors="*{marque}"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="annee" class="form-label">Année</label>
+                        <input type="number" class="form-control" id="annee" th:field="*{annee}" min="1900" max="2025">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="couleur" class="form-label">Couleur</label>
+                        <input type="text" class="form-control" id="couleur" th:field="*{couleur}">
+                    </div>
+
+                    <!-- AFFICHAGE DE L'IMAGE ACTUELLE -->
+                    <div class="mb-3" th:if="${produit.imageUrl}">
+                        <label class="form-label">Image actuelle :</label>
+                        <div class="text-center">
+                            <img th:src="${produit.imageUrl}" alt="Image du produit" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                        </div>
+                    </div>
+
+                    <!-- NOUVEAU CHAMP POUR CHANGER L'IMAGE -->
+                    <div class="mb-3">
+                        <label for="imageFile" class="form-label">Nouvelle image (optionnel)</label>
+                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
+                        <div class="form-text">
+                            Laissez vide pour garder l'image actuelle. Formats acceptés : JPG, PNG, GIF (max 10MB)
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-warning">Modifier</button>
-                    <a th:href="@{/index}" class="btn btn-secondary">Annuler</a>
+                    <a th:href="@{/user/index}" class="btn btn-secondary">Annuler</a>
                 </form>
             </div>
         </div>

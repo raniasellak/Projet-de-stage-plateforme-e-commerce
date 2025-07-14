@@ -27,7 +27,7 @@
     <div class="card">
         <div class="card-header"> Liste Produits</div>
         <div class="card-body">
-            <form method="get" th:action="@{/index}">
+            <form method="get" th:action="@{/user/index}">
                 <label>Keyword</label>
                 <input type="text" name="keyword" th:value="${keyword}">
                 <button class="btn btn-outline-info">search</button>
@@ -42,6 +42,7 @@
                     <th>Quantité</th>
                     <th>Catégorie</th>
                     <th>Marque</th>
+                    <th>Image</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -54,12 +55,19 @@
                     <td th:text="${p.categorie}"></td>
                     <td th:text="${p.marque}"></td>
                     <td>
-                        <a onclick="return confirm('Est vous sure!')" class="btn btn-danger" th:href="@{deleteProduit(id=${p.id} , keyword=${keyword}, page=${currentPage})}">delete
+                    <td>
+                        <img th:if="${p.imageUrl != null}" th:src="@{${p.imageUrl}}" alt="Image du produit" style="max-width: 100px;">
+                        <span th:if="${p.imageUrl == null}" class="text-muted">Pas d’image</span>
+                    </td>
+
+                    </td>
+                    <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a onclick="return confirm('Est vous sure!')" class="btn btn-danger" th:href="@{/admin/deleteProduit(id=${p.id} , keyword=${keyword}, page=${currentPage})}">delete
                         </a>
                     </td>
 
-                    <td>
-                        <a  class="btn btn-success" th:href="@{editProduit(id=${p.id} , keyword=${keyword}, page=${currentPage} )}">Edit
+                    <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a  class="btn btn-success" th:href="@{/admin/editProduit(id=${p.id} , keyword=${keyword}, page=${currentPage} )}">Edit
                         </a>
                     </td>
                 </tr>
@@ -68,7 +76,7 @@
             <ul class="nav nav-pills">
                 <li th:each="page,status : ${pages}">
                     <a  th:class="${status.index==currentPage?'btn btn-info m-1':'btn btn-outline-info m-1'}"
-                        th:href="@{/index(page=${status.index},keyword=${keyword})}"
+                        th:href="@{/user/index(page=${status.index},keyword=${keyword})}"
                         th:text="${status.index}"></a>
 
                 </li>
