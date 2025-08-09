@@ -1,0 +1,99 @@
+<div class="container">
+  <mat-card class="client-card">
+    <mat-card-header>
+      <mat-card-title>Clients title</mat-card-title>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <table class="table">
+        <thead>
+        <tr>
+          <th>Image</th>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Email</th>
+          <th>CNI</th>
+          <th>Téléphone</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for (client of clients ; track client){
+        <tr >
+          <td>
+            <img [src]="'http://localhost:8085/images/' + client.image" alt="Image de {{ client.nom }}" width="150">
+          </td>
+          <td>{{ client.id }}</td>
+          <td>{{ client.nom }}</td>
+          <td>{{ client.prenom }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.cni }}</td>
+          <td>{{ client.telephone }}</td>
+          <td>
+            <button (click)="clientPayments(client)" mat-raised-button color="primary" >Payments</button>
+          </td>
+
+        </tr>
+        }
+
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="client-card" >
+    <mat-card-header>
+      <mat-card-content>
+         <table matSort mat-table [dataSource]="clientsDataSource">
+           <!-- Colonne Image -->
+           <ng-container matColumnDef="image">
+             <th mat-header-cell *matHeaderCellDef> Image </th>
+             <td mat-cell *matCellDef="let client">
+               <img [src]="getImageUrl(client.image)" alt="Client image" width="50" height="50">
+             </td>
+           </ng-container>
+
+           <!-- Colonne ID -->
+           <ng-container matColumnDef="id">
+             <th mat-header-cell *matHeaderCellDef> ID </th>
+             <td mat-cell *matCellDef="let client">{{ client.id }}</td>
+           </ng-container>
+
+           <!-- Colonne Nom -->
+           <ng-container matColumnDef="nom">
+             <th mat-header-cell *matHeaderCellDef> Nom </th>
+             <td mat-cell *matCellDef="let client">{{ client.nom }}</td>
+           </ng-container>
+
+           <!-- Colonne Prénom -->
+           <ng-container matColumnDef="prenom">
+             <th mat-header-cell *matHeaderCellDef> Prénom </th>
+             <td mat-cell *matCellDef="let client">{{ client.prenom }}</td>
+           </ng-container>
+
+           <!-- Colonne Email -->
+           <ng-container matColumnDef="email">
+             <th mat-header-cell *matHeaderCellDef> Email </th>
+             <td mat-cell *matCellDef="let client">{{ client.email }}</td>
+           </ng-container>
+
+           <!-- Colonne CNI -->
+           <ng-container matColumnDef="cni">
+             <th mat-header-cell *matHeaderCellDef> CNI </th>
+             <td mat-cell *matCellDef="let client">{{ client.cni }}</td>
+           </ng-container>
+
+           <!-- Colonne Téléphone -->
+           <ng-container matColumnDef="telephone">
+             <th mat-header-cell *matHeaderCellDef> Téléphone </th>
+             <td mat-cell *matCellDef="let client">{{ client.telephone }}</td>
+           </ng-container>
+
+           <!-- Header & Row -->
+           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+         </table>
+      </mat-card-content>
+    </mat-card-header>
+  </mat-card>
+</div>

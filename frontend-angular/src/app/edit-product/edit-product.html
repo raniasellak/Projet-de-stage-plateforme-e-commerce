@@ -1,0 +1,183 @@
+<div class="container">
+  <mat-card class="edit-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>edit</mat-icon>
+        Modifier le produit
+      </mat-card-title>
+      <mat-card-subtitle *ngIf="product">
+        Modification de: {{ product.nom }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Indicateur de chargement -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Chargement du produit...</p>
+      </div>
+
+      <!-- Formulaire de modification -->
+      <form *ngIf="!isLoading" [formGroup]="editForm" (ngSubmit)="onSubmit()" class="edit-form">
+
+        <!-- Première ligne: Nom et Prix -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom du produit</mat-label>
+            <input matInput formControlName="nom" placeholder="Ex: iPhone 14">
+            <mat-icon matSuffix>badge</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('nom')">
+              {{ getErrorMessage('nom') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Prix (MAD)</mat-label>
+            <input matInput type="number" formControlName="prix" placeholder="0.00">
+            <mat-icon matSuffix>attach_money</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('prix')">
+              {{ getErrorMessage('prix') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Description -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="4"
+                    placeholder="Description détaillée du produit..."></textarea>
+          <mat-icon matSuffix>description</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('description')">
+            {{ getErrorMessage('description') }}
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Deuxième ligne: Catégorie et Marque -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Catégorie</mat-label>
+            <mat-select formControlName="categorie">
+              <mat-option *ngFor="let cat of categories" [value]="cat">
+                {{ cat }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>category</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('categorie')">
+              {{ getErrorMessage('categorie') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Marque</mat-label>
+            <mat-select formControlName="marque">
+              <mat-option *ngFor="let marque of marques" [value]="marque">
+                {{ marque }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>business</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('marque')">
+              {{ getErrorMessage('marque') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Troisième ligne: Couleur, Année et Quantité -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Couleur</mat-label>
+            <mat-select formControlName="couleur">
+              <mat-option value="">Aucune couleur</mat-option>
+              <mat-option *ngFor="let couleur of couleurs" [value]="couleur">
+                {{ couleur }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>palette</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Année</mat-label>
+            <input matInput type="number" formControlName="annee" placeholder="2024">
+            <mat-icon matSuffix>calendar_today</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('annee')">
+              {{ getErrorMessage('annee') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Quantité</mat-label>
+            <input matInput type="number" formControlName="quantite" placeholder="0">
+            <mat-icon matSuffix>inventory</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('quantite')">
+              {{ getErrorMessage('quantite') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Section Image -->
+        <div class="image-section">
+          <h3>Image du produit</h3>
+
+          <!-- Image actuelle -->
+          <div *ngIf="currentImageUrl && !imagePreview" class="current-image">
+            <h4>Image actuelle:</h4>
+            <img [src]="currentImageUrl" [alt]="product.nom" class="product-image-preview">
+          </div>
+
+          <!-- Aperçu de la nouvelle image -->
+          <div *ngIf="imagePreview" class="image-preview">
+            <h4>Nouvelle image sélectionnée:</h4>
+            <img [src]="imagePreview" alt="Aperçu" class="product-image-preview">
+            <button type="button" mat-icon-button color="warn"
+                    (click)="removeSelectedImage()"
+                    class="remove-image-btn"
+                    matTooltip="Supprimer l'image sélectionnée">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Sélecteur de fichier -->
+          <div class="file-input-container">
+            <input type="file"
+                   id="fileInput"
+                   (change)="onFileSelected($event)"
+                   accept="image/*"
+                   class="hidden-file-input">
+
+            <button type="button"
+                    mat-stroked-button
+                    color="primary"
+                    (click)="triggerFileInput()">
+              <mat-icon>cloud_upload</mat-icon>
+              {{ imagePreview ? 'Changer l\'image' : 'Choisir une nouvelle image' }}
+            </button>
+
+            <small class="file-hint">
+              Formats acceptés: JPG, PNG, WebP (Max: 10MB)
+            </small>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="actions">
+          <button type="button"
+                  mat-stroked-button
+                  (click)="onCancel()"
+                  [disabled]="isSubmitting">
+            <mat-icon>cancel</mat-icon>
+            Annuler
+          </button>
+
+          <button type="submit"
+                  mat-raised-button
+                  color="primary"
+                  [disabled]="editForm.invalid || isSubmitting">
+            <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!isSubmitting">save</mat-icon>
+            {{ isSubmitting ? 'Modification...' : 'Sauvegarder' }}
+          </button>
+        </div>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

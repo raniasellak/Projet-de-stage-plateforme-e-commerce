@@ -1,0 +1,8 @@
+.container {
+  max-width: 400px;
+  margin: 40px auto;
+}
+
+.full-width {
+  width: 100%;
+}

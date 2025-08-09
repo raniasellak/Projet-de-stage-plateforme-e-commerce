@@ -1,0 +1,30 @@
+
+<nav class="navbar">
+  <!-- Logo à gauche -->
+  <div class="logo">
+    <img src="/assets/logo-mon-agence.png" alt="Logo" class="logo-img">
+  </div>
+
+  <!-- Liens de navigation au centre -->
+  <ul class="nav-links" [class.active]="menuOpen">
+    <li><a class="nav-btn" routerLink="/home">Home</a></li>
+    <li><a class="nav-btn" routerLink="/boutique">Boutique</a></li>
+    <li><a href="#">À propos</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+
+  <!-- Menu burger pour mobile -->
+  <div class="burger" (click)="toggleMenu()">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <!-- Informations utilisateur à droite -->
+  <div class="user-info" *ngIf="authService.authenticated">
+    <span *ngIf="authService.authenticated" style="margin-right: 10px;">
+      Bonjour, {{ authService.username }}
+    </span>
+    <button mat-raised-button color="accent" (click)="logout()">Logout</button>
+  </div>
+</nav>

@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* hauteur minimum = 100% de la fenêtre */
+}
+
+router-outlet {
+  flex: 1; /* prend tout l’espace disponible */
+  display: block; /* évite les bugs avec flex */
+}

@@ -1,0 +1,17 @@
+.table th {
+border: solid 1px black;
+padding: 10px;
+background-color: lightgrey;
+}
+
+
+
+.table td {
+border: solid 1px black;
+padding: 10px;
+}
+
+.client-card {
+display: inline-block;
+width: 800px;
+}

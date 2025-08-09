@@ -1,7 +1,9 @@
 package ma.Vala.Boutique.entities;
 
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,6 +51,11 @@ public class Produit {
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    @Column(name = "image_public_id", length = 255)
+    private String imagePublicId;
+
+
 
 
 }

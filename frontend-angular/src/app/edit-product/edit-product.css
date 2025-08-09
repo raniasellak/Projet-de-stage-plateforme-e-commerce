@@ -1,0 +1,219 @@
+/* Container principal */
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+/* Carte principale */
+.edit-card {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+
+.edit-card mat-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin: -16px -16px 20px -16px;
+  padding: 20px;
+  border-radius: 8px 8px 0 0;
+}
+
+.edit-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.edit-card mat-card-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 5px;
+}
+
+/* Conteneur de chargement */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 20px;
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 1.1em;
+}
+
+/* Formulaire */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Lignes du formulaire */
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-row .full-width {
+  flex: 1;
+  min-width: 250px;
+}
+
+/* Champs de formulaire pleine largeur */
+.full-width {
+  width: 100%;
+}
+
+/* Section image */
+.image-section {
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fafafa;
+  margin: 20px 0;
+}
+
+.image-section h3 {
+  margin: 0 0 15px 0;
+  color: #555;
+  font-size: 1.2em;
+}
+
+.image-section h4 {
+  margin: 0 0 10px 0;
+  color: #777;
+  font-size: 1em;
+}
+
+/* Images de prévisualisation */
+.current-image,
+.image-preview {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.product-image-preview {
+  max-width: 200px;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  object-fit: cover;
+}
+
+/* Bouton de suppression d'image */
+.remove-image-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #f44336;
+  color: white;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+}
+
+.remove-image-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Conteneur du sélecteur de fichier */
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.file-hint {
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* Boutons d'action */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.actions button {
+  min-width: 120px;
+  height: 45px;
+  font-size: 1em;
+}
+
+.actions button mat-icon {
+  margin-right: 8px;
+}
+
+/* Spinner dans le bouton */
+.actions button mat-spinner {
+  margin-right: 8px;
+}
+
+/* États des champs */
+.mat-mdc-form-field.mat-form-field-invalid .mat-mdc-form-field-outline-thick {
+  color: #f44336;
+}
+
+.mat-mdc-form-field-error {
+  font-size: 0.9em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    margin: 10px;
+    padding: 0 10px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-row .full-width {
+    min-width: unset;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .product-image-preview {
+    max-width: 150px;
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-card mat-card-title {
+    font-size: 1.3em;
+  }
+
+  .product-image-preview {
+    max-width: 120px;
+    max-height: 120px;
+  }
+}

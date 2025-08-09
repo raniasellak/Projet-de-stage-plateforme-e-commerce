@@ -1,0 +1,17 @@
+<form [formGroup]="productForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data" novalidate>
+  <input type="text" formControlName="nom" placeholder="Nom du produit" />
+  <input type="number" formControlName="prix" placeholder="Prix" />
+  <textarea formControlName="description" placeholder="Description"></textarea>
+  <input type="text" formControlName="couleur" placeholder="Couleur" />
+  <input type="number" formControlName="annee" placeholder="Année" />
+  <input type="number" formControlName="quantite" placeholder="Quantité" />
+  <input type="text" formControlName="categorie" placeholder="Catégorie" />
+  <input type="text" formControlName="marque" placeholder="Marque" />
+
+  <input type="file" (change)="onImageSelected($event)" accept="image/*" />
+  <div *ngIf="imagePreview">
+    <img [src]="imagePreview" alt="Aperçu" width="200" />
+  </div>
+
+  <button type="submit" [disabled]="productForm.invalid">Ajouter Produit</button>
+</form>

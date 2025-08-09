@@ -1,0 +1,90 @@
+<!-- Navbar (barre du haut) -->
+<mat-toolbar style="background-color: pink; color: white;">
+  <!-- Logo à gauche pour les utilisateurs USER -->
+  <div *ngIf="authService.authenticated && !authService.roles.includes('ADMIN')" class="logo" style="margin-right: 15px;">
+    <img src="/assets/logo-mon-agence.png" class="logo-img" style="height: 50px;" />
+  </div>
+
+  <!-- Bouton menu hamburger seulement pour les ADMIN -->
+  <button *ngIf="authService.roles.includes('ADMIN')" mat-icon-button (click)="drawer.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span class="spacer"></span>
+  <button mat-button routerLink="/home">Home</button>
+  <button mat-button routerLink="/admin/profile">Profile</button>
+
+  <!-- Menu Import visible seulement pour les ADMIN -->
+  <button *ngIf="authService.roles.includes('ADMIN')" mat-button [matMenuTriggerFor]="importMenu">
+    <mat-icon>arrow_drop_down</mat-icon>
+    Import
+  </button>
+
+  <mat-menu #importMenu>
+    <button mat-menu-item routerLink="/admin/loadClients">Load Clients</button>
+    <button mat-menu-item routerLink="/admin/loadPayments">Load Payments</button>
+    <button mat-menu-item routerLink="/admin/loadProducts">Load Products</button>
+  </mat-menu>
+
+  <span class="spacer"></span>
+
+  <!-- Affichage du nom d'utilisateur -->
+  <span *ngIf="authService.authenticated" style="margin-right: 10px;">
+    Bonjour, {{ authService.username }}
+  </span>
+
+  <!-- Logo à droite seulement pour les ADMIN -->
+  <div *ngIf="authService.roles.includes('ADMIN')" class="logo" style="margin-right: 15px;">
+    <img src="/assets/logo-mon-agence.png" class="logo-img" style="height: 50px;" />
+  </div>
+
+  <!-- Bouton Logout -->
+  <button mat-raised-button color="accent" (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<!-- Sidebar (menu à gauche) - Visible SEULEMENT pour les ADMIN -->
+<mat-drawer-container *ngIf="authService.authenticated && authService.roles.includes('ADMIN')">
+  <mat-drawer #drawer mode="side" position="start" opened="true">
+    <mat-nav-list>
+      <!-- Dashboard -->
+      <mat-list-item>
+        <button mat-button routerLink="/admin/dashboard">
+          <mat-icon>dashboard</mat-icon> Dashboard
+        </button>
+      </mat-list-item>
+
+      <!-- Clients -->
+      <mat-list-item>
+        <button mat-button routerLink="/admin/clients">
+          <mat-icon>people</mat-icon> Clients
+        </button>
+      </mat-list-item>
+
+      <!-- Payments -->
+      <mat-list-item>
+        <button mat-button routerLink="/admin/payments">
+          <mat-icon>payment</mat-icon> Payments
+        </button>
+      </mat-list-item>
+
+      <!-- Products -->
+      <mat-list-item>
+        <button mat-button routerLink="/admin/products">
+          <mat-icon>inventory</mat-icon> Products
+        </button>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-drawer>
+
+  <!-- Contenu principal avec sidebar -->
+  <mat-drawer-content>
+    <div style="min-height: 600px;">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>
+
+<!-- Contenu principal sans sidebar pour les USER et les non authentifiés -->
+<div *ngIf="!authService.authenticated || !authService.roles.includes('ADMIN')" style="min-height: 600px;">
+  <router-outlet></router-outlet>
+</div>

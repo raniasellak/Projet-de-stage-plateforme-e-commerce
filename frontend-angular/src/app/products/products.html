@@ -1,0 +1,192 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Liste des produits</mat-card-title>
+      <mat-card-subtitle>{{ totalItems }} produit(s) trouvé(s)</mat-card-subtitle>
+
+      <!-- Bouton Ajouter Produit -->
+      <div class="card-header-actions">
+        <button mat-raised-button color="primary" (click)="showAddForm = !showAddForm">
+          <mat-icon>{{ showAddForm ? 'close' : 'add' }}</mat-icon>
+          {{ showAddForm ? 'Fermer le formulaire' : 'Ajouter un produit' }}
+        </button>
+      </div>
+      <div *ngIf="showAddForm" style="margin-top: 20px;">
+        <app-add-product (productAdded)="onProductAdded()"></app-add-product>
+      </div>
+
+
+    </mat-card-header>
+    <mat-divider></mat-divider>
+
+    <mat-card-content>
+      <!-- Champ de recherche -->
+      <mat-form-field appearance="outline">
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="filterProducts($event)" [value]="keyword">
+      </mat-form-field>
+
+      <!-- Indicateur de chargement -->
+      <div *ngIf="isLoading" class="loading-container">
+        <p>Chargement des produits...</p>
+      </div>
+
+      <!-- Message si aucun produit -->
+      <div *ngIf="!isLoading && dataSource.data.length === 0" class="no-data">
+        <mat-icon>inbox</mat-icon>
+        <p>Aucun produit trouvé</p>
+      </div>
+
+      <!-- Conteneur du tableau -->
+      <div *ngIf="!isLoading && dataSource.data.length > 0" class="example-container mat-elevation-z1">
+        <mat-table matSort [dataSource]="dataSource">
+
+          <!-- ID -->
+          <ng-container matColumnDef="id">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> ID </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+          </ng-container>
+
+          <!-- Nom -->
+          <ng-container matColumnDef="nom">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Nom </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <div class="product-name">
+                <strong>{{element.nom}}</strong>
+                <small *ngIf="element.marque">{{element.marque}}</small>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Prix -->
+          <ng-container matColumnDef="prix">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Prix </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span class="price">{{element.prix | currency:'MAD':'symbol':'1.2-2'}}</span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Description -->
+          <ng-container matColumnDef="description">
+            <mat-header-cell *matHeaderCellDef> Description </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span class="description" [title]="element.description">
+                {{ element.description | slice:0:50 }}{{ element.description && element.description.length > 50 ? '...' : '' }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Couleur -->
+          <ng-container matColumnDef="couleur">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Couleur </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span *ngIf="element.couleur; else noCouleur"
+                    class="color-badge"
+                    [style.background-color]="getColorValue(element.couleur)">
+                {{ element.couleur }}
+              </span>
+              <ng-template #noCouleur>
+                <span class="no-value">-</span>
+              </ng-template>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Année -->
+          <ng-container matColumnDef="annee">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Année </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span *ngIf="element.annee; else noAnnee">{{ element.annee }}</span>
+              <ng-template #noAnnee>
+                <span class="no-value">-</span>
+              </ng-template>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Quantité -->
+          <ng-container matColumnDef="quantite">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Quantité </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span class="stock" [ngClass]="{
+                'stock-low': element.quantite < 5,
+                'stock-medium': element.quantite >= 5 && element.quantite < 20,
+                'stock-high': element.quantite >= 20
+              }">
+                {{ element.quantite }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Catégorie -->
+          <ng-container matColumnDef="categorie">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Catégorie </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span class="category-badge">{{ element.categorie }}</span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Marque -->
+          <ng-container matColumnDef="marque">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Marque </mat-header-cell>
+            <mat-cell *matCellDef="let element"> {{ element.marque }} </mat-cell>
+          </ng-container>
+
+          <!-- Image URL -->
+          <ng-container matColumnDef="imageUrl">
+            <mat-header-cell *matHeaderCellDef> Image </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <div class="product-image">
+                <img *ngIf="element.imageUrl; else noImage"
+                     [src]="getImageUrl(element.imageUrl)"
+                     [alt]="element.nom"
+                     class="product-img" />
+                <ng-template #noImage>
+                  <mat-icon class="no-image-icon">image_not_supported</mat-icon>
+                </ng-template>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- NOUVELLE COLONNE ACTIONS -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <div class="actions-container">
+                <!-- Bouton Modifier -->
+                <button mat-icon-button
+                        color="primary"
+                        (click)="editProduct(element)"
+                        matTooltip="Modifier le produit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <!-- Bouton Supprimer -->
+                <button mat-icon-button
+                        color="warn"
+                        (click)="deleteProduct(element)"
+                        matTooltip="Supprimer le produit">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Header and Row declarations -->
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+
+        </mat-table>
+
+        <!-- Paginator -->
+        <mat-paginator
+          [length]="totalItems"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 25]"
+          [pageIndex]="currentPage"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
