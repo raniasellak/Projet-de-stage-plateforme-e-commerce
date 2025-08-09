@@ -6,15 +6,15 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ImageUploadService {
-  private uploadUrl = 'http://localhost:8085/api/products/upload';
+  private uploadUrl = 'http://localhost:8085/api/upload'; // CORRECTION: Enlever "products"
 
   constructor(private http: HttpClient) {}
 
-    uploadImage(file: File): Observable<string> {
-      const formData = new FormData();
-      formData.append('image', file);
+  uploadImage(file: File): Observable<{secure_url: string, public_id: string}> {
+    const formData = new FormData();
+    formData.append('image', file);
 
-      return this.http.post(this.uploadUrl, formData, { responseType: 'text' });
-    }
-
+    // Retourner l'objet complet avec secure_url et public_id
+    return this.http.post<{secure_url: string, public_id: string}>(this.uploadUrl, formData);
+  }
 }

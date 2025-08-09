@@ -17,16 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:4200","http://localhost:63555"})
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:55832"})
 public class ProduitApiController {
 
     @Autowired
@@ -35,75 +32,83 @@ public class ProduitApiController {
     @Autowired
     private ProduitRepository produitRepository;
 
+    // Récupérer tous les produits avec pagination et recherche
     @GetMapping("/produits")
     public ResponseEntity<Map<String, Object>> getAllProduits(
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "4") int size,
-            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", defaultValue = "") String keyword) {
 
         try {
-            Page<Produit> produits = produitRepository.findByNomContainsIgnoreCase(keyword, PageRequest.of(page, size));
+            Page<Produit> produitPage;
+
+            if (keyword.isEmpty()) {
+                produitPage = produitRepository.findAll(PageRequest.of(page, size));
+            } else {
+                produitPage = produitRepository.findByNomContainsIgnoreCase(keyword, PageRequest.of(page, size));
+            }
 
             Map<String, Object> response = new HashMap<>();
-            response.put("produits", produits.getContent());
+            response.put("produits", produitPage.getContent());
+            response.put("totalItems", produitPage.getTotalElements());
+            response.put("totalPages", produitPage.getTotalPages());
             response.put("currentPage", page);
-            response.put("totalItems", produits.getTotalElements());
-            response.put("totalPages", produits.getTotalPages());
-            response.put("keyword", keyword);
+            response.put("pageSize", size);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", "Erreur lors de la récupération des produits");
-            errorResponse.put("error", e.getMessage());
+            errorResponse.put("error", "Erreur lors de la récupération des produits: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, String>> test() {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Backend connecté avec succès!");
-        response.put("timestamp", java.time.LocalDateTime.now().toString());
-        return ResponseEntity.ok(response);
-    }
-
+    // Récupérer un produit par ID
     @GetMapping("/produits/{id}")
     public ResponseEntity<Produit> getProduit(@PathVariable Long id) {
         Optional<Produit> produit = produitRepository.findById(id);
-        return produit.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        if (produit.isPresent()) {
+            return ResponseEntity.ok(produit.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
+    // Créer un produit avec image
     @PostMapping("/produits-with-image")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createProduitWithImage(
             @RequestParam("nom") String nom,
             @RequestParam("prix") double prix,
             @RequestParam("description") String description,
-            @RequestParam("couleur") String couleur,
-            @RequestParam("annee") Integer annee,
+            @RequestParam(value = "couleur", required = false) String couleur,
+            @RequestParam(value = "annee", required = false) Integer annee,
             @RequestParam("quantite") int quantite,
             @RequestParam("categorie") String categorie,
             @RequestParam("marque") String marque,
             @RequestParam("image") MultipartFile imageFile
     ) {
         try {
+            // Validation basique
+            if (imageFile.isEmpty()) {
+                return ResponseEntity.badRequest().body("Image requise");
+            }
+
             // Upload vers Cloudinary
             Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(), ObjectUtils.asMap(
                     "folder", "products",
-                    "resource_type", "auto"
+                    "resource_type", "auto",
+                    "transformation", ObjectUtils.asMap("quality", "auto", "fetch_format", "auto")
             ));
+
             String imageUrl = uploadResult.get("secure_url").toString();
             String publicId = uploadResult.get("public_id").toString();
 
-            // Construire l'objet Produit (imageUrl + imagePublicId)
+            // Construire l'objet Produit
             Produit produit = Produit.builder()
                     .nom(nom)
                     .prix(prix)
                     .description(description)
-                    .couleur(couleur)
+                    .couleur(couleur != null && !couleur.trim().isEmpty() ? couleur : null)
                     .annee(annee)
                     .quantite(quantite)
                     .categorie(categorie)
@@ -124,6 +129,7 @@ public class ProduitApiController {
         }
     }
 
+    // Modifier un produit avec nouvelle image
     @PutMapping("/produits-with-image/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateProduitWithImage(
@@ -131,8 +137,8 @@ public class ProduitApiController {
             @RequestParam("nom") String nom,
             @RequestParam("prix") double prix,
             @RequestParam("description") String description,
-            @RequestParam("couleur") String couleur,
-            @RequestParam(name = "annee", required = false) Integer annee,
+            @RequestParam(value = "couleur", required = false) String couleur,
+            @RequestParam(value = "annee", required = false) Integer annee,
             @RequestParam("quantite") int quantite,
             @RequestParam("categorie") String categorie,
             @RequestParam("marque") String marque,
@@ -146,21 +152,15 @@ public class ProduitApiController {
 
             Produit existingProduct = existingProductOpt.get();
 
-            // Si nouvelle image fournie -> supprimer l'ancienne sur Cloudinary (si présent) puis uploader la nouvelle
+            // Si nouvelle image fournie
             if (imageFile != null && !imageFile.isEmpty()) {
-                if (existingProduct.getImagePublicId() != null) {
-                    try {
-                        cloudinary.uploader().destroy(existingProduct.getImagePublicId(), ObjectUtils.emptyMap());
-                    } catch (Exception ex) {
-                        // loger l'erreur mais continuer (on ne veut pas bloquer la mise à jour si suppression impossible)
-                        System.out.println("Warning: impossible de supprimer l'ancienne image Cloudinary: " + ex.getMessage());
-                    }
-                }
-
+                // Upload nouvelle image vers Cloudinary
                 Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(), ObjectUtils.asMap(
                         "folder", "products",
-                        "resource_type", "auto"
+                        "resource_type", "auto",
+                        "transformation", ObjectUtils.asMap("quality", "auto", "fetch_format", "auto")
                 ));
+                // Mettre à jour l'URL et public_id
                 existingProduct.setImageUrl(uploadResult.get("secure_url").toString());
                 existingProduct.setImagePublicId(uploadResult.get("public_id").toString());
             }
@@ -169,7 +169,7 @@ public class ProduitApiController {
             existingProduct.setNom(nom);
             existingProduct.setPrix(prix);
             existingProduct.setDescription(description);
-            existingProduct.setCouleur(couleur.isEmpty() ? null : couleur);
+            existingProduct.setCouleur(couleur != null && !couleur.trim().isEmpty() ? couleur : null);
             existingProduct.setAnnee(annee);
             existingProduct.setQuantite(quantite);
             existingProduct.setCategorie(categorie);
@@ -187,6 +187,7 @@ public class ProduitApiController {
         }
     }
 
+    // Modifier un produit sans changer l'image
     @PutMapping("/produits/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Produit> updateProduit(@PathVariable Long id, @Valid @RequestBody Produit produit) {
@@ -198,6 +199,7 @@ public class ProduitApiController {
 
         Produit existingProduct = existingProductOpt.get();
 
+        // Mettre à jour seulement les champs modifiables (pas l'image)
         existingProduct.setNom(produit.getNom());
         existingProduct.setPrix(produit.getPrix());
         existingProduct.setDescription(produit.getDescription());
@@ -206,12 +208,13 @@ public class ProduitApiController {
         existingProduct.setQuantite(produit.getQuantite());
         existingProduct.setCategorie(produit.getCategorie());
         existingProduct.setMarque(produit.getMarque());
-        // Ne pas toucher imageUrl/imagePublicId ici.
+        // imageUrl et imagePublicId restent inchangés
 
         Produit updatedProduct = produitRepository.save(existingProduct);
         return ResponseEntity.ok(updatedProduct);
     }
 
+    // Supprimer un produit
     @DeleteMapping("/produits/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> deleteProduit(@PathVariable Long id) {
@@ -219,26 +222,19 @@ public class ProduitApiController {
             Optional<Produit> productOpt = produitRepository.findById(id);
 
             if (!productOpt.isPresent()) {
+                Map<String, String> response = new HashMap<>();
+                response.put("success", "false");
+                response.put("message", "Produit non trouvé");
                 return ResponseEntity.notFound().build();
             }
 
-            Produit product = productOpt.get();
-
-            // 1) Supprimer l'image sur Cloudinary si on a le public_id
-            if (product.getImagePublicId() != null) {
-                try {
-                    cloudinary.uploader().destroy(product.getImagePublicId(), ObjectUtils.emptyMap());
-                } catch (Exception ex) {
-                    System.out.println("Warning: impossible de supprimer l'image Cloudinary: " + ex.getMessage());
-                }
-            }
-
-            // 2) Supprimer le produit en base
+            // Supprimer seulement de la base de données
+            // (les images restent sur Cloudinary comme demandé)
             produitRepository.deleteById(id);
 
             Map<String, String> response = new HashMap<>();
             response.put("success", "true");
-            response.put("message", "Produit supprimé avec succès");
+            response.put("message", "Produit supprimé avec succès de la base de données");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -249,21 +245,35 @@ public class ProduitApiController {
         }
     }
 
-    // endpoint facultatif pour upload séparé (retourne URL + public_id)
+    // Endpoint pour upload d'image séparé (optionnel)
     @PostMapping("/upload")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile image) {
         try {
+            if (image.isEmpty()) {
+                return ResponseEntity.badRequest().body("Aucune image fournie");
+            }
+
             Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap(
                     "folder", "products",
-                    "resource_type", "auto"
+                    "resource_type", "auto",
+                    "transformation", ObjectUtils.asMap("quality", "auto", "fetch_format", "auto")
             ));
-            Map<String, String> resp = new HashMap<>();
-            resp.put("secure_url", uploadResult.get("secure_url").toString());
-            resp.put("public_id", uploadResult.get("public_id").toString());
-            return ResponseEntity.ok(resp);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("secure_url", uploadResult.get("secure_url").toString());
+            response.put("public_id", uploadResult.get("public_id").toString());
+            return ResponseEntity.ok(response);
+
         } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Erreur lors de l'upload");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l'upload : " + e.getMessage());
         }
+    }
+
+    // Endpoint de test
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("API fonctionne correctement !");
     }
 }

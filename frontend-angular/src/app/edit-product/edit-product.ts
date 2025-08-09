@@ -29,8 +29,7 @@ import { Product } from '../products/models/product.model';
     MatSnackBarModule,
     MatProgressSpinnerModule
   ],
-providers: [ProductService],
-
+  providers: [ProductService],
   templateUrl: './edit-product.html',
   styleUrls: ['./edit-product.css']
 })
@@ -95,7 +94,7 @@ export class EditProduct implements OnInit {
 
         // Définir l'image actuelle
         if (product.imageUrl) {
-          this.currentImageUrl =  product.imageUrl;
+          this.currentImageUrl = product.imageUrl;
         }
 
         this.isLoading = false;
@@ -167,86 +166,148 @@ export class EditProduct implements OnInit {
     }
   }
 
-  // Soumettre le formulaire
- onSubmit(): void {
-   if (this.editForm.invalid) {
-     this.snackBar.open('Veuillez corriger les erreurs dans le formulaire', 'Fermer', { duration: 3000 });
-     return;
-   }
+  // Méthode de soumission du formulaire
+  onSubmit(): void {
+    if (this.editForm.invalid) {
+      this.snackBar.open('Veuillez corriger les erreurs dans le formulaire', 'Fermer', {
+        duration: 3000
+      });
+      return;
+    }
 
-   this.isSubmitting = true;
-   // si une nouvelle image est sélectionnée -> envoyer FormData vers /produits-with-image/{id}
-   if (this.selectedFile) {
-     const formData = new FormData();
-     Object.keys(this.editForm.controls).forEach(key => {
-       const val = this.editForm.get(key)?.value;
-       if (val !== null && val !== undefined) formData.append(key, val.toString());
-     });
-     formData.append('image', this.selectedFile);
+    this.isSubmitting = true;
 
-     this.productService.updateProductWithImage(this.productId, formData).subscribe({
-       next: () => {
-         this.snackBar.open('Produit modifié avec succès!', 'Fermer', { duration: 3000 });
-         this.router.navigate(['/admin/products']);
-       },
-       error: (err) => {
-         console.error(err);
-         this.snackBar.open('Erreur lors de la modification du produit', 'Fermer', { duration: 3000 });
-         this.isSubmitting = false;
-       }
-     });
-   } else {
-     // pas de nouvelle image -> envoyer JSON à PUT /api/produits/{id}
-     const productData = { ...this.editForm.value };
-     this.productService.updateProduct(this.productId, productData).subscribe({
-       next: () => {
-         this.snackBar.open('Produit modifié avec succès!', 'Fermer', { duration: 3000 });
-         this.router.navigate(['/admin/products']);
-       },
-       error: (err) => {
-         console.error(err);
-         this.snackBar.open('Erreur lors de la modification du produit', 'Fermer', { duration: 3000 });
-         this.isSubmitting = false;
-       }
-     });
-   }
- }
+if (this.selectedFile) {
+  const formData = new FormData();
 
+  // Ajouter tous les champs du formulaire au FormData
+  Object.keys(this.editForm.controls).forEach(key => {
+    const value = this.editForm.get(key)?.value;
+    if (value !== null && value !== undefined && value !== '') {
+      formData.append(key, value.toString());
+    }
+  });
 
+  // Ajouter l'image au FormData
+  formData.append('image', this.selectedFile);
 
-  // Annuler et retourner à la liste
-  onCancel(): void {
-    this.router.navigate(['/admin/products']);
+  // Appel à updateProductWithImage
+  this.productService.updateProductWithImage(this.productId, formData).subscribe({
+    next: (response: Product) => {
+      console.log("Produit mis à jour avec succès :", response);
+      this.snackBar.open('Produit modifié avec succès!', 'Fermer', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+      this.router.navigate(['/admin/products']);
+    },
+    error: (error: any) => {
+      console.error("Erreur lors de la mise à jour :", error);
+      this.snackBar.open(
+        error.error?.message || 'Erreur lors de la modification du produit',
+        'Fermer',
+        { duration: 5000, panelClass: ['error-snackbar'] }
+      );
+      this.isSubmitting = false;
+    }
+  });
+}
+
+    // Pas de nouvelle image - modification des données seulement
+    else {
+      const productData = { ...this.editForm.value };
+
+      // Nettoyer les valeurs vides/null pour éviter les erreurs
+      Object.keys(productData).forEach(key => {
+           if (productData[key] === '' || productData[key] === null) {
+             // Pour les champs optionnels, on peut les laisser undefined
+             if (key === 'couleur' || key === 'annee') {
+               productData[key] = null;
+             } else {
+               delete productData[key];
+             }
+           }
+         });
+
+      // Appel à updateProduct
+      this.productService.updateProduct(this.productId, productData).subscribe({
+        next: (response) => {
+          console.log('Produit mis à jour sans changement d\'image:', response);
+          this.snackBar.open('Produit modifié avec succès!', 'Fermer', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          this.router.navigate(['/admin/products']);
+        },
+        error: (error: any) => {
+          console.error('Erreur lors de la modification sans image:', error);
+          this.snackBar.open(
+            error.error?.message || 'Erreur lors de la modification du produit',
+            'Fermer',
+            { duration: 5000, panelClass: ['error-snackbar'] }
+          );
+          this.isSubmitting = false;
+        }
+      });
+    }
   }
 
-  // Méthodes utilitaires pour la validation
+  // Méthode pour obtenir les messages d'erreur personnalisés
   getErrorMessage(fieldName: string): string {
     const field = this.editForm.get(fieldName);
     if (field?.hasError('required')) {
-      return `${fieldName} est requis`;
+      return `${this.getFieldLabel(fieldName)} est requis`;
     }
     if (field?.hasError('minlength')) {
-      return `${fieldName} est trop court`;
+      const minLength = field.errors?.['minlength']?.requiredLength;
+      return `${this.getFieldLabel(fieldName)} doit contenir au moins ${minLength} caractères`;
+    }
+    if (field?.hasError('maxlength')) {
+      const maxLength = field.errors?.['maxlength']?.requiredLength;
+      return `${this.getFieldLabel(fieldName)} ne doit pas dépasser ${maxLength} caractères`;
     }
     if (field?.hasError('min')) {
-      return `${fieldName} doit être positif`;
+      const minValue = field.errors?.['min']?.min;
+      return `${this.getFieldLabel(fieldName)} doit être supérieur ou égal à ${minValue}`;
     }
     if (field?.hasError('max')) {
-      return `${fieldName} doit être valide`;
+      const maxValue = field.errors?.['max']?.max;
+      return `${this.getFieldLabel(fieldName)} doit être inférieur ou égal à ${maxValue}`;
     }
     return '';
   }
 
+  // Méthode pour vérifier si un champ est invalide
   isFieldInvalid(fieldName: string): boolean {
     const field = this.editForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
-triggerFileInput(): void {
-  const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-  if (fileInput) {
-    fileInput.click();
+  // Méthode privée pour obtenir le label français d'un champ
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      'nom': 'Le nom',
+      'prix': 'Le prix',
+      'description': 'La description',
+      'couleur': 'La couleur',
+      'annee': 'L\'année',
+      'quantite': 'La quantité',
+      'categorie': 'La catégorie',
+      'marque': 'La marque'
+    };
+    return labels[fieldName] || fieldName;
   }
-}
 
+  // Méthode pour déclencher l'ouverture du sélecteur de fichiers
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  // Méthode pour annuler et retourner à la liste des produits
+  onCancel(): void {
+    this.router.navigate(['/admin/products']);
+  }
 }

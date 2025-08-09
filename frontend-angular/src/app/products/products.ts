@@ -106,17 +106,15 @@ export class Products implements OnInit, AfterViewInit {
           }
         },
         error: (error) => {
-          console.error('Erreur lors du chargement des produits:', error);
-          this.isLoading = false;
-
-          // Afficher des données de test en cas d'erreur de connexion
-          if (error.status === 0 || error.status === 404) {
-            console.log('Chargement des données de test...');
-            this.loadMockData();
-          }
-        }
-      });
-  }
+                 console.error('Erreur lors du chargement des produits:', error);
+                 this.isLoading = false;
+                 this.snackBar.open('Erreur de connexion au serveur', 'Fermer', {
+                   duration: 5000,
+                   panelClass: ['error-snackbar']
+                 });
+               }
+             });
+         }
 
   loadMockData() {
     const mockProducts: Product[] = [];
@@ -166,35 +164,53 @@ export class Products implements OnInit, AfterViewInit {
     this.router.navigate(['/admin/products/view', product.id]);
   }
 
+  // Méthode deleteProduct corrigée dans products.ts
+
   deleteProduct(product: Product): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le produit "${product.nom}" ?`)) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le produit "${product.nom}" ?\n\nNote: L'image restera stockée sur Cloudinary.`)) {
       console.log('Supprimer produit:', product);
 
-      // CORRECTION: Vérifier que product.id n'est pas undefined
       if (product.id !== undefined) {
+        this.isLoading = true;
+
         this.productService.deleteProduct(product.id).subscribe({
-          next: () => {
-            console.log('Produit supprimé avec succès');
-            this.snackBar.open('Produit supprimé avec succès', 'Fermer', {
-              duration: 3000
-            });
-            this.loadProducts();
+          next: (response) => {
+            console.log('Réponse suppression:', response);
+            this.snackBar.open(
+              response.message || 'Produit supprimé avec succès',
+              'Fermer',
+              {
+                duration: 4000,
+                panelClass: ['success-snackbar']
+              }
+            );
+            this.loadProducts(); // Recharger la liste
+            this.isLoading = false;
           },
           error: (error) => {
             console.error('Erreur lors de la suppression:', error);
-            this.snackBar.open('Erreur lors de la suppression', 'Fermer', {
-              duration: 3000
-            });
+            this.snackBar.open(
+              error.error?.message || 'Erreur lors de la suppression',
+              'Fermer',
+              {
+                duration: 5000,
+                panelClass: ['error-snackbar']
+              }
+            );
+            this.isLoading = false;
           }
         });
       } else {
         console.error('Impossible de supprimer le produit: ID non défini');
         this.snackBar.open('Erreur: ID du produit non défini', 'Fermer', {
-          duration: 3000
+          duration: 3000,
+          panelClass: ['error-snackbar']
         });
       }
     }
   }
+
+
 onProductAdded(): void {
   this.showAddForm = false; // Ferme le formulaire après ajout
   this.refresh();           // Recharge la liste des produits
@@ -226,7 +242,33 @@ onProductAdded(): void {
     this.loadProducts();
   }
 
-  getImageUrl(fileName: string): string {
-    return `${environment.imagePath}/${fileName}`;
-  }
+ getImageUrl(imageUrl: string): string {
+     // Si pas d'URL, retourner une image par défaut ou chaîne vide
+     if (!imageUrl) {
+       return '';
+     }
+
+     // Si l'URL est déjà complète (Cloudinary), la retourner telle quelle
+     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+       return imageUrl;
+     }
+
+     // Sinon, construire l'URL avec le chemin local (fallback)
+     return `${environment.imagePath}/${imageUrl}`;
+   }
+
+  // Méthode pour tester la connexion API
+   testConnection(): void {
+     this.productService.testConnection().subscribe({
+       next: (response) => {
+         console.log('Test connexion réussi:', response);
+         this.snackBar.open('Connexion API réussie!', 'Fermer', { duration: 3000 });
+       },
+       error: (error) => {
+         console.error('Test connexion échoué:', error);
+         this.snackBar.open('Erreur de connexion API', 'Fermer', { duration: 5000 });
+       }
+     });
+   }
+
 }

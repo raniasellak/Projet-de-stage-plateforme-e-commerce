@@ -49,13 +49,10 @@ public class Produit {
     @Size(max = 50, message = "La marque ne doit pas dépasser 50 caractères")
     private String marque;
 
-    @Column(name = "image_url", length = 500)
+    @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "image_public_id", length = 255)
+    @Column(name = "image_public_id")
     private String imagePublicId;
-
-
-
 
 }

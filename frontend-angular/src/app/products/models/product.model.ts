@@ -7,10 +7,10 @@ export interface Product {
   couleur?: string;
   annee?: number;
   marque?: string;
-  modele?: string;
-  typeCarburant?: string;
   imageUrl?: string;
   categorie?: string;
+  imagePublicId?: string | null;
+
 }
 
 // Interface pour la réponse de l'API

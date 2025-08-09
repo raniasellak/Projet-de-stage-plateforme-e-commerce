@@ -135,10 +135,7 @@
             <mat-header-cell *matHeaderCellDef> Image </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <div class="product-image">
-                <img *ngIf="element.imageUrl; else noImage"
-                     [src]="getImageUrl(element.imageUrl)"
-                     [alt]="element.nom"
-                     class="product-img" />
+                <img [src]="element.imageUrl" [alt]="element.nom" class="product-img" />
                 <ng-template #noImage>
                   <mat-icon class="no-image-icon">image_not_supported</mat-icon>
                 </ng-template>
