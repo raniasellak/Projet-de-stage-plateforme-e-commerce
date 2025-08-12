@@ -33,8 +33,9 @@ export class ProductService {
       );
   }
 
-  // Ajouter un produit avec image (FormData)
+  // Ajouter un produit avec image (FormData) - avec headers explicites
   addProductWithImage(formData: FormData): Observable<Product> {
+    // Ne pas définir Content-Type, laissez Angular/HttpClient le faire automatiquement pour FormData
     return this.http.post<Product>(`${this.apiUrl}/produits-with-image`, formData)
       .pipe(
         catchError(this.handleError)
@@ -83,22 +84,49 @@ export class ProductService {
       );
   }
 
-  // Gestion des erreurs
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Une erreur inconnue s\'est produite';
+ private handleError(error: HttpErrorResponse) {
+   let errorMessage = 'Une erreur inconnue s\'est produite';
 
-    if (error.error instanceof ErrorEvent) {
-      // Erreur côté client
-      errorMessage = `Erreur: ${error.error.message}`;
-    } else {
-      // Erreur côté serveur
-      errorMessage = `Code d'erreur: ${error.status}\nMessage: ${error.message}`;
-      if (error.error && error.error.message) {
-        errorMessage = error.error.message;
-      }
-    }
+   console.error('Erreur HTTP complète:', error);
 
-    console.error('Erreur ProductService:', errorMessage);
-    return throwError(() => new Error(errorMessage));
-  }
+   if (error.error instanceof ErrorEvent) {
+     // Erreur côté client
+     errorMessage = `Erreur: ${error.error.message}`;
+   } else {
+     // Erreur côté serveur
+     console.error('Status:', error.status);
+     console.error('Error body:', error.error);
+
+     // Si l'erreur contient un message spécifique du serveur
+     if (error.error && typeof error.error === 'string') {
+       errorMessage = error.error;
+     } else if (error.error && error.error.message) {
+       errorMessage = error.error.message;
+     } else {
+       // Messages d'erreur selon le code de statut
+       switch (error.status) {
+         case 400:
+           errorMessage = 'Données invalides. Vérifiez votre formulaire.';
+           break;
+         case 401:
+           errorMessage = 'Non autorisé. Connectez-vous.';
+           break;
+         case 403:
+           errorMessage = 'Accès refusé.';
+           break;
+         case 404:
+           errorMessage = 'Ressource non trouvée.';
+           break;
+         case 500:
+           errorMessage = 'Erreur interne du serveur. Contactez l\'administrateur.';
+           break;
+         default:
+           errorMessage = `Erreur ${error.status}: ${error.message}`;
+       }
+     }
+   }
+
+   console.error('Message d\'erreur final:', errorMessage);
+   return throwError(() => new Error(errorMessage));
+ }
 }
