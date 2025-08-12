@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:4200","http://localhost:58599"})
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:60909"})
 @RequestMapping("/api")
 public class ClientRestController {
 

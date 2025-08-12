@@ -1,0 +1,97 @@
+<div class="car-cards-container">
+  <!-- Indicateur de chargement -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement des voitures...</p>
+  </div>
+
+  <!-- Grille des cartes -->
+  <div class="cards-grid" *ngIf="!loading">
+    <div
+      *ngFor="let voiture of voitures; trackBy: trackByFn"
+      class="car-card"
+    >
+      <!-- Image de la voiture -->
+      <div class="car-image-container">
+        <img
+          [src]="voiture.imageUrl || 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=300&fit=crop'"
+          [alt]="voiture.nom"
+          class="car-image"
+          (error)="onImageError($event)"
+          loading="lazy"
+        />
+
+        <!-- Badge catégorie -->
+        <div
+          class="category-badge"
+          [style.background]="getBadgeColor(voiture.categorie)"
+        >
+          {{ voiture.categorie || 'Non définie' }}
+        </div>
+
+        <!-- Statut de disponibilité -->
+        <div
+          class="availability-status"
+          [ngClass]="getAvailabilityStatus(voiture.quantite).class"
+        >
+          {{ getAvailabilityStatus(voiture.quantite).text }}
+        </div>
+      </div>
+
+      <!-- Corps de la carte -->
+      <div class="card-body">
+        <!-- Titre -->
+        <h5 class="car-title">{{ voiture.nom || 'Nom non défini' }}</h5>
+
+        <!-- Métadonnées -->
+        <div class="car-meta">
+          <div class="car-brand">
+            <span class="brand-icon">🚗</span>
+            {{ voiture.marque || 'Marque inconnue' }}
+          </div>
+          <div class="car-year">{{ voiture.annee || 'N/A' }}</div>
+        </div>
+
+        <!-- Description -->
+        <p class="car-description">{{ voiture.description || 'Aucune description disponible' }}</p>
+
+        <!-- Détails -->
+        <div class="car-details">
+          <div class="detail-item">
+            <div class="detail-icon">🎨</div>
+            <span>{{ voiture.couleur || 'Non spécifiée' }}</span>
+          </div>
+          <div class="detail-item">
+            <div class="detail-icon">📦</div>
+            <span>
+              {{ voiture.quantite || 0 }}
+              {{ (voiture.quantite || 0) > 1 ? 'disponibles' : 'disponible' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Footer avec prix et bouton -->
+        <div class="car-footer">
+          <div class="price-container">
+            <div class="price">{{ (voiture.prix || 0) | currency:'EUR':'symbol':'1.2-2' }}</div>
+            <div class="price-period">par jour</div>
+          </div>
+          <button
+            type="button"
+            class="btn rent-btn"
+            [disabled]="!voiture.quantite || voiture.quantite === 0"
+            (click)="onRentCar(voiture)"
+          >
+            {{ (!voiture.quantite || voiture.quantite === 0) ? 'Indisponible' : 'Louer maintenant' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si aucune voiture -->
+  <div *ngIf="!loading && voitures.length === 0" class="no-cars-message">
+    <h3 class="no-cars-title">Aucune voiture disponible</h3>
+    <p>Les voitures seront affichées ici une fois chargées depuis le serveur.</p>
+  </div>
+</div>

@@ -122,7 +122,28 @@ export class EditProduct implements OnInit {
       categorie: product.categorie,
       marque: product.marque
     });
+
+  // Vérifier si l'URL de l'image est valide
+    if (product.imageUrl) {
+      this.validateImageUrl(product.imageUrl);
+    }
   }
+
+validateImageUrl(imageUrl: string): void {
+  const img = new Image();
+  img.onload = () => {
+    this.currentImageUrl = imageUrl;
+  };
+  img.onerror = () => {
+    console.warn('Image non trouvée:', imageUrl);
+    this.currentImageUrl = null; // ou une image par défaut
+    // Optionnel: afficher une image par défaut
+    // this.currentImageUrl = '/assets/images/no-image.png';
+  };
+  img.src = imageUrl;
+}
+
+
 
   // Gestion de la sélection d'image
   onFileSelected(event: any): void {
@@ -165,6 +186,8 @@ export class EditProduct implements OnInit {
       fileInput.value = '';
     }
   }
+
+
 
   // Méthode de soumission du formulaire
   onSubmit(): void {
@@ -213,21 +236,23 @@ if (this.selectedFile) {
   });
 }
 
-    // Pas de nouvelle image - modification des données seulement
-    else {
-      const productData = { ...this.editForm.value };
 
-      // Nettoyer les valeurs vides/null pour éviter les erreurs
-      Object.keys(productData).forEach(key => {
-           if (productData[key] === '' || productData[key] === null) {
-             // Pour les champs optionnels, on peut les laisser undefined
-             if (key === 'couleur' || key === 'annee') {
-               productData[key] = null;
-             } else {
-               delete productData[key];
-             }
-           }
-         });
+
+    // Pas de nouvelle image - modification des données seulement
+      else {
+        const productData = { ...this.editForm.value };
+
+        // Convertir les chaînes vides en null pour les champs optionnels
+        if (productData.couleur === '') {
+          productData.couleur = null;
+        }
+        if (productData.annee === '') {
+          productData.annee = null;
+        }
+
+        console.log('Données à envoyer:', productData);
+
+
 
       // Appel à updateProduct
       this.productService.updateProduct(this.productId, productData).subscribe({
@@ -305,6 +330,12 @@ if (this.selectedFile) {
       fileInput.click();
     }
   }
+
+
+onImageError(event: Event) {
+  const target = event.target as HTMLImageElement;
+  target.src = '/assets/default-product.png'; // image de remplacement
+}
 
   // Méthode pour annuler et retourner à la liste des produits
   onCancel(): void {

@@ -97,11 +97,11 @@ export class ProductService {
      console.error('Status:', error.status);
      console.error('Error body:', error.error);
 
-     // Si l'erreur contient un message spécifique du serveur
-     if (error.error && typeof error.error === 'string') {
-       errorMessage = error.error;
-     } else if (error.error && error.error.message) {
+     // Gestion spécifique des erreurs Spring Boot
+     if (error.error && error.error.message) {
        errorMessage = error.error.message;
+     } else if (error.error && typeof error.error === 'string') {
+       errorMessage = error.error;
      } else {
        // Messages d'erreur selon le code de statut
        switch (error.status) {
@@ -117,8 +117,11 @@ export class ProductService {
          case 404:
            errorMessage = 'Ressource non trouvée.';
            break;
+         case 405:
+           errorMessage = 'Méthode non supportée par le serveur.';
+           break;
          case 500:
-           errorMessage = 'Erreur interne du serveur. Contactez l\'administrateur.';
+           errorMessage = 'Erreur interne du serveur.';
            break;
          default:
            errorMessage = `Erreur ${error.status}: ${error.message}`;
@@ -128,5 +131,4 @@ export class ProductService {
 
    console.error('Message d\'erreur final:', errorMessage);
    return throwError(() => new Error(errorMessage));
- }
-}
+ }}

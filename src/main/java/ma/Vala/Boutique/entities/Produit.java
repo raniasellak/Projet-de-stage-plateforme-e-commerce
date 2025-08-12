@@ -28,7 +28,7 @@ public class Produit {
     private String nom;
 
     @Positive(message = "Le prix doit être un nombre positif")
-    private double prix;
+    private Double prix;
 
     @NotBlank(message = "La description ne doit pas être vide")
     @Size(max = 255, message = "La description ne doit pas dépasser 255 caractères")
@@ -39,7 +39,7 @@ public class Produit {
     private Integer annee;
 
     @Min(value = 0, message = "La quantité ne peut pas être négative")
-    private int quantite;
+    private Integer  quantite;
 
     @NotBlank(message = "La catégorie est obligatoire")
     @Size(max = 50, message = "La catégorie ne doit pas dépasser 50 caractères")

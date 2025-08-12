@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:4200","http://localhost:58599"})
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:60909"})
 public class ProduitApiController {
 
     @Autowired
@@ -313,6 +313,63 @@ public class ProduitApiController {
             response.put("success", "false");
             response.put("message", "Erreur lors de la suppression: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // Modifier un produit SANS changer l'image (JSON)
+    @PutMapping("/produits/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> updateProduit(
+            @PathVariable Long id,
+            @RequestBody Produit produitData
+    ) {
+        try {
+            System.out.println("=== DEBUG MODIFICATION PRODUIT SANS IMAGE ===");
+            System.out.println("ID: " + id);
+            System.out.println("Données reçues: " + produitData);
+
+            Optional<Produit> existingProductOpt = produitRepository.findById(id);
+            if (!existingProductOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Produit existingProduct = existingProductOpt.get();
+
+            // Mettre à jour uniquement les champs fournis (garde l'image actuelle)
+            if (produitData.getNom() != null) {
+                existingProduct.setNom(produitData.getNom().trim());
+            }
+            if (produitData.getPrix() != null) {
+                existingProduct.setPrix(produitData.getPrix());
+            }
+            if (produitData.getDescription() != null) {
+                existingProduct.setDescription(produitData.getDescription().trim());
+            }
+            if (produitData.getCouleur() != null) {
+                existingProduct.setCouleur(produitData.getCouleur().trim().isEmpty() ? null : produitData.getCouleur().trim());
+            }
+            if (produitData.getAnnee() != null) {
+                existingProduct.setAnnee(produitData.getAnnee());
+            }
+            if (produitData.getQuantite() != null) {
+                existingProduct.setQuantite(produitData.getQuantite());
+            }
+            if (produitData.getCategorie() != null) {
+                existingProduct.setCategorie(produitData.getCategorie().trim());
+            }
+            if (produitData.getMarque() != null) {
+                existingProduct.setMarque(produitData.getMarque().trim());
+            }
+
+            // L'image reste inchangée
+            Produit updatedProduct = produitRepository.save(existingProduct);
+            return ResponseEntity.ok(updatedProduct);
+
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la modification sans image: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la modification : " + e.getMessage());
         }
     }
 

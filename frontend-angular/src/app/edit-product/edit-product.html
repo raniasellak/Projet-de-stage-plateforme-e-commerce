@@ -120,7 +120,7 @@
           <!-- Image actuelle -->
           <div *ngIf="currentImageUrl && !imagePreview" class="current-image">
             <h4>Image actuelle:</h4>
-            <img [src]="currentImageUrl" [alt]="product.nom" class="product-image-preview">
+            <img [src]="currentImageUrl" [alt]="product.nom" class="product-image-preview" (error)="onImageError($event)">
           </div>
 
           <!-- Aperçu de la nouvelle image -->
