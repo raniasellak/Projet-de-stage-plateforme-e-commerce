@@ -1,10 +1,14 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { Product } from '../../products/models/product.model';
+import { Product } from '../products/models/product.model';
+import { CommonModule } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-car-cards',
+   standalone: true,
+    imports: [CommonModule, CurrencyPipe],
   templateUrl: './car-cards.html',
-  styleUrls: ['./car-cards.scss']
+  styleUrls: ['./car-cards.css']
 })
 export class CarCards implements OnInit {
 

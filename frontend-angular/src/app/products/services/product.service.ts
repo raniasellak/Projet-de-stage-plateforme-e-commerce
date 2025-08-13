@@ -105,6 +105,9 @@ export class ProductService {
      } else {
        // Messages d'erreur selon le code de statut
        switch (error.status) {
+          case 0:
+                     errorMessage = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+                     break;
          case 400:
            errorMessage = 'Données invalides. Vérifiez votre formulaire.';
            break;

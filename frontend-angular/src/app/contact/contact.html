@@ -1,0 +1,294 @@
+<!-- Contact Component Template -->
+<div class="contact-container">
+  <!-- Header Section -->
+  <div class="contact-header">
+    <h1 class="page-title">Contactez-nous</h1>
+    <p class="page-subtitle">Nous sommes là pour vous accompagner dans tous vos besoins</p>
+  </div>
+
+  <div class="contact-content">
+    <!-- Contact Info Cards -->
+    <div class="contact-info-cards">
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-phone"></i>
+        </div>
+        <div class="info-content">
+          <h3>Téléphone</h3>
+          <p>+33 1 23 45 67 89</p>
+          <p>Du lundi au vendredi<br>9h - 18h</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="info-content">
+          <h3>Email</h3>
+          <p>contact@votreagence.com</p>
+          <p>Réponse sous 24h</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div class="info-content">
+          <h3>Adresse</h3>
+          <p>123 Rue de la Location<br>75001 Paris, France</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Contact Form -->
+    <div class="contact-form-section">
+      <div class="form-header">
+        <h2>Envoyez-nous un message</h2>
+        <p>Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais</p>
+      </div>
+
+      <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+        <!-- Type de demande -->
+        <div class="form-group full-width">
+          <label for="requestType" class="form-label">
+            <i class="fas fa-list"></i>
+            Type de demande *
+          </label>
+          <select
+            id="requestType"
+            formControlName="requestType"
+            class="form-select"
+            [class.error]="isFieldInvalid('requestType')">
+            <option value="">Sélectionnez le type de votre demande</option>
+            <option value="reservation">Réservation</option>
+            <option value="reclamation">Réclamation</option>
+            <option value="devis">Demande de devis</option>
+            <option value="information">Demande d'information</option>
+            <option value="autre">Autre</option>
+          </select>
+          <div class="error-message" *ngIf="isFieldInvalid('requestType')">
+            Veuillez sélectionner le type de votre demande
+          </div>
+        </div>
+
+        <!-- Informations personnelles -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName" class="form-label">
+              <i class="fas fa-user"></i>
+              Prénom *
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              formControlName="firstName"
+              class="form-input"
+              [class.error]="isFieldInvalid('firstName')"
+              placeholder="Votre prénom">
+            <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+              Le prénom est requis
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName" class="form-label">
+              <i class="fas fa-user"></i>
+              Nom *
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="form-input"
+              [class.error]="isFieldInvalid('lastName')"
+              placeholder="Votre nom">
+            <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+              Le nom est requis
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <i class="fas fa-envelope"></i>
+              Email *
+            </label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-input"
+              [class.error]="isFieldInvalid('email')"
+              placeholder="votre.email@exemple.com">
+            <div class="error-message" *ngIf="isFieldInvalid('email')">
+              <span *ngIf="contactForm.get('email')?.errors?.['required']">L'email est requis</span>
+              <span *ngIf="contactForm.get('email')?.errors?.['email']">Veuillez saisir un email valide</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">
+              <i class="fas fa-phone"></i>
+              Téléphone
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="form-input"
+              placeholder="+33 1 23 45 67 89">
+          </div>
+        </div>
+
+        <!-- Sujet -->
+        <div class="form-group full-width">
+          <label for="subject" class="form-label">
+            <i class="fas fa-tag"></i>
+            Sujet *
+          </label>
+          <input
+            type="text"
+            id="subject"
+            formControlName="subject"
+            class="form-input"
+            [class.error]="isFieldInvalid('subject')"
+            placeholder="Résumez votre demande en quelques mots">
+          <div class="error-message" *ngIf="isFieldInvalid('subject')">
+            Le sujet est requis
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="form-group full-width">
+          <label for="message" class="form-label">
+            <i class="fas fa-comment"></i>
+            Message *
+          </label>
+          <textarea
+            id="message"
+            formControlName="message"
+            class="form-textarea"
+            [class.error]="isFieldInvalid('message')"
+            rows="6"
+            placeholder="Décrivez votre demande en détail..."></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('message')">
+            Le message est requis
+          </div>
+        </div>
+
+        <!-- Upload de fichiers -->
+        <div class="form-group full-width">
+          <label class="form-label">
+            <i class="fas fa-paperclip"></i>
+            Pièces jointes
+          </label>
+          <div class="file-upload-area"
+               (dragover)="onDragOver($event)"
+               (dragleave)="onDragLeave($event)"
+               (drop)="onFilesDrop($event)"
+               [class.drag-over]="isDragOver">
+
+            <div class="upload-content">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <p class="upload-text">
+                Glissez vos fichiers ici ou
+                <label for="fileInput" class="upload-link">cliquez pour parcourir</label>
+              </p>
+              <p class="upload-hint">
+                Photos de véhicule, documents d'identité, copies de réservation, etc.
+              </p>
+              <p class="upload-formats">
+                Formats acceptés: JPG, PNG, PDF (Max 10MB par fichier)
+              </p>
+            </div>
+
+            <input
+              type="file"
+              id="fileInput"
+              multiple
+              (change)="onFilesSelected($event)"
+              accept=".jpg,.jpeg,.png,.pdf"
+              style="display: none;">
+          </div>
+
+          <!-- Liste des fichiers sélectionnés -->
+          <div class="selected-files" *ngIf="selectedFiles.length > 0">
+            <h4>Fichiers sélectionnés:</h4>
+            <div class="file-list">
+              <div class="file-item" *ngFor="let file of selectedFiles; let i = index">
+                <div class="file-info">
+                  <i class="fas fa-file" [class]="getFileIcon(file.name)"></i>
+                  <div class="file-details">
+                    <span class="file-name">{{ file.name }}</span>
+                    <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="remove-file-btn"
+                  (click)="removeFile(i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="resetForm()">
+            <i class="fas fa-undo"></i>
+            Réinitialiser
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="contactForm.invalid || isLoading">
+            <i class="fas fa-paper-plane" *ngIf="!isLoading"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+            {{ isLoading ? 'Envoi en cours...' : 'Envoyer le message' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="faq-section">
+    <h2>Questions fréquentes</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h3>Délai de réponse</h3>
+        <p>Nous répondons à tous les messages sous 24h ouvrables</p>
+      </div>
+      <div class="faq-item">
+        <h3>Urgences</h3>
+        <p>Pour les urgences, contactez-nous directement par téléphone</p>
+      </div>
+      <div class="faq-item">
+        <h3>Documents requis</h3>
+        <p>Pour les réclamations, joignez photos et justificatifs</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success/Error Messages -->
+<div class="toast-container">
+  <div class="toast success" *ngIf="showSuccessMessage" [@fadeInOut]>
+    <i class="fas fa-check-circle"></i>
+    <span>Votre message a été envoyé avec succès!</span>
+  </div>
+
+  <div class="toast error" *ngIf="showErrorMessage" [@fadeInOut]>
+    <i class="fas fa-exclamation-circle"></i>
+    <span>Une erreur est survenue. Veuillez réessayer.</span>
+  </div>
+</div>
