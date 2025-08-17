@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators ,ReactiveFormsModule, FormsModule} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-contact',
@@ -10,11 +11,11 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,         // Pour *ngIf et *ngFor
     ReactiveFormsModule,  // Pour formGroup et les formulaires réactifs
-    FormsModule       // Si tu utilises ngModel
-    ],
+    FormsModule           // Si tu utilises ngModel
+  ],
   templateUrl: './contact.html',
   styleUrls: ['./contact.css'],
-animations: [
+  animations: [
     trigger('fadeInOut', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateX(100%)' }),
@@ -195,19 +196,22 @@ export class Contact implements OnInit {
 
       // Ajout des données du formulaire
       Object.keys(this.contactForm.value).forEach(key => {
-        formData.append(key, this.contactForm.value[key]);
+        const value = this.contactForm.value[key];
+        if (value !== null && value !== undefined && value !== '') {
+          formData.append(key, value);
+        }
       });
 
       // Ajout des fichiers
-      this.selectedFiles.forEach((file, index) => {
-        formData.append(`files`, file);
+      this.selectedFiles.forEach((file) => {
+        formData.append('files', file);
       });
 
       // Ajout d'informations supplémentaires
       formData.append('timestamp', new Date().toISOString());
       formData.append('userAgent', navigator.userAgent);
 
-      // Envoi de l'email via l'API Spring Boot
+      // Envoi de l'email via l'API Spring Boot - URL CORRIGÉE
       this.sendContactForm(formData);
     } else {
       // Marquer tous les champs comme touchés pour afficher les erreurs
@@ -229,16 +233,30 @@ export class Contact implements OnInit {
    * Envoi du formulaire de contact via l'API
    */
   private sendContactForm(formData: FormData): void {
-    this.http.post('/api/contact/send-email', formData).subscribe({
+    // ✅ URL CORRIGÉE : ajout de "/api" avant "/contact"
+    this.http.post(`${environment.backendHost}/api/contact/send-email`, formData).subscribe({
       next: (response: any) => {
         this.isLoading = false;
+        console.log('Réponse du serveur:', response);
         this.showSuccessToast('Votre message a été envoyé avec succès!');
         this.resetForm();
       },
       error: (error) => {
         this.isLoading = false;
         console.error('Erreur lors de l\'envoi:', error);
-        this.showErrorToast('Une erreur est survenue. Veuillez réessayer.');
+
+        // Messages d'erreur plus détaillés
+        let errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+
+        if (error.status === 0) {
+          errorMessage = 'Impossible de se connecter au serveur. Vérifiez que le backend est démarré.';
+        } else if (error.status === 404) {
+          errorMessage = 'Service non trouvé. Vérifiez l\'URL de l\'API.';
+        } else if (error.status === 500) {
+          errorMessage = 'Erreur serveur. Contactez l\'administrateur.';
+        }
+
+        this.showErrorToast(errorMessage);
       }
     });
   }

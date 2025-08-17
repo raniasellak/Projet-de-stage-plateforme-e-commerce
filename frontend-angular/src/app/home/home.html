@@ -1,1 +1,130 @@
-<h2> Bienvenue</h2>
+<div class="home-container">
+  <!-- Header Section avec Carrousel -->
+  <section class="hero-section">
+    <!-- Carrousel d'images de fond -->
+    <div class="hero-carousel">
+      <div
+        class="carousel-slide"
+        *ngFor="let image of heroImages; let i = index"
+        [class.active]="i === currentSlide"
+        [style.background-image]="'url(' + image.url + ')'"
+      >
+        <!-- Overlay pour améliorer la lisibilité du texte -->
+        <div class="hero-overlay"></div>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="hero-content">
+      <div class="container">
+        <div class="hero-text">
+          <!-- Animation du titre principal -->
+          <h1 class="hero-title">
+            Bienvenue chez <span class="brand-highlight">Location Auto</span>
+          </h1>
+
+          <!-- Sous-titre -->
+          <p class="hero-subtitle">
+            Découvrez notre collection exclusive de voitures de prestige
+          </p>
+
+          <!-- Titre dynamique de la voiture actuelle -->
+          <div class="hero-car-info">
+            <h3 class="car-name">{{ heroImages[currentSlide].title }}</h3>
+            <p class="car-subtitle">{{ heroImages[currentSlide].subtitle }}</p>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="hero-buttons">
+            <button class="btn btn-primary hero-btn" (click)="scrollToVoitures()">
+              <i class="fas fa-car"></i>
+              Voir nos voitures
+            </button>
+            <button class="btn btn-outline-light hero-btn-secondary">
+              <i class="fas fa-phone"></i>
+              Nous contacter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contrôles du carrousel -->
+    <div class="carousel-controls">
+      <!-- Boutons précédent/suivant -->
+      <button class="carousel-btn prev" (click)="prevSlide()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next" (click)="nextSlide()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Indicateurs de slides -->
+      <div class="carousel-indicators">
+        <button
+          *ngFor="let image of heroImages; let i = index"
+          class="indicator"
+          [class.active]="i === currentSlide"
+          (click)="goToSlide(i)"
+        >
+        </button>
+      </div>
+    </div>
+
+    <!-- Badge de confiance -->
+    <div class="trust-badge">
+      <div class="badge-content">
+        <i class="fas fa-shield-alt"></i>
+        <span>+10 ans d'expérience</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Voitures Populaires -->
+  <section class="voitures-section" id="voitures-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Nos Voitures Populaires</h2>
+        <p class="section-description">Découvrez notre sélection des voitures les plus demandées</p>
+      </div>
+
+      <!-- Utilisation du composant CarCards -->
+      <app-car-cards
+        [voitures]="voituresPopulaires"
+        [loading]="loadingVoitures"
+        (onRentClick)="onVoitureRent($event)">
+      </app-car-cards>
+
+      <!-- Bouton pour voir toutes les voitures -->
+      <div class="text-center mt-4" *ngIf="!loadingVoitures">
+        <button class="btn btn-outline-primary" (click)="allerBoutique()">
+          Voir toutes nos voitures
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Services -->
+  <section class="services-section">
+    <div class="container">
+      <h2 class="section-title">Nos Services</h2>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">🚗</div>
+          <h3>Location Flexible</h3>
+          <p>Louez pour une heure, une journée ou plus selon vos besoins</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">💯</div>
+          <h3>Qualité Garantie</h3>
+          <p>Toutes nos voitures sont régulièrement entretenues et contrôlées</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📞</div>
+          <h3>Support 24/7</h3>
+          <p>Notre équipe est disponible à tout moment pour vous aider</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

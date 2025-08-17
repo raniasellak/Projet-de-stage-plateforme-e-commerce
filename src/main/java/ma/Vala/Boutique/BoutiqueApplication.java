@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @SpringBootApplication
 // ✅ CORRECTION : Inclure les packages de sécurité dans le scan
-@EntityScan({"ma.Vala.Boutique.entities", "ma.Vala.Boutique.security.entities"})
+@EntityScan({"ma.Vala.Boutique.entities", "ma.Vala.Boutique.security.entities", "ma.Vala.Boutique.model"})
 @EnableJpaRepositories({"ma.Vala.Boutique.repository", "ma.Vala.Boutique.security.repo"})
 public class BoutiqueApplication implements CommandLineRunner {
 
