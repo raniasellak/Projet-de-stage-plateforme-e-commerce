@@ -79,6 +79,12 @@ private Long id;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "image_url")
+    private String imageUrl; // chemin ou URL de l'image
+
+    @Column(columnDefinition = "TEXT")
+    private String description; // présentation du membre
+
     // Énumérations
     public enum Department {
         ADMINISTRATION("Administration"),

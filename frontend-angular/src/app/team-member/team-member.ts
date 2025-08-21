@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { TeamMemberService, TeamMemberDto, Department, EmploymentStatus, PageResponse } from '../services/team-member.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-team-member',
@@ -28,7 +29,10 @@ export class TeamMember implements OnInit {
   totalPages = 0;
   totalElements = 0;
 
-  constructor(public teamMemberService: TeamMemberService) {}
+  constructor(public teamMemberService: TeamMemberService, private router: Router) {}
+  goToAddMember() {
+      this.router.navigate(['/admin/team-member/add']); // adapte le path selon ton routing
+    }
 
   ngOnInit(): void {
     this.loadTeamMembers();

@@ -1,3 +1,8 @@
+<div class="top-bar">
+  <button (click)="goToAddMember()">Add Member</button>
+</div>
+
+
 <div class="filters">
   <input
     type="text"
@@ -34,7 +39,8 @@
     <th>Téléphone</th>
     <th>Poste</th>
     <th>Département</th>
-    <th>Statut</th>
+    <th>Actif</th>
+    <th>Description</th>
   </tr>
   </thead>
   <tbody>
@@ -45,7 +51,12 @@
     <td>{{ member.phoneNumber }}</td>
     <td>{{ member.position }}</td>
     <td>{{ teamMemberService.getDepartmentDisplayName(member.department) }}</td>
-    <td>{{ teamMemberService.getEmploymentStatusDisplayName(member.employmentStatus) }}</td>
+    <td>
+        <span [ngStyle]="{ color: member.isActive ? 'green' : 'red' }">
+          {{ member.isActive ? 'Oui' : 'Non' }}
+        </span>
+    </td>
+    <td>{{ member.description }}</td>
   </tr>
   </tbody>
 </table>

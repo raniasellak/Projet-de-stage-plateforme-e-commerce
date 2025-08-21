@@ -1,0 +1,76 @@
+/* Conteneur principal */
+.add-member-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Titres */
+.add-member-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Champs du formulaire */
+.add-member-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Label */
+.add-member-container label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+/* Inputs et selects */
+.add-member-container input,
+.add-member-container select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Boutons */
+.add-member-container button {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-member-container button:hover {
+  background-color: #0056b3;
+}
+
+/* Groupement des boutons */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Messages d’erreur ou succès */
+.error-message {
+  color: red;
+  font-size: 14px;
+}
+
+.success-message {
+  color: green;
+  font-size: 14px;
+}

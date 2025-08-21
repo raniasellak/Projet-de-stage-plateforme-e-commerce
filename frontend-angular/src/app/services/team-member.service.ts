@@ -3,22 +3,18 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface TeamMemberDto {
-  id?: number;
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
   position: string;
   department: Department;
-  employmentStatus: EmploymentStatus;
-  salary?: number;
-  hireDate?: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
+  imageUrl?: string;
   isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  description:string;
+
+
 }
 
 export enum Department {

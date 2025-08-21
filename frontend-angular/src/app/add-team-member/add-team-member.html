@@ -1,0 +1,37 @@
+<h2>Ajouter un membre</h2>
+<form (ngSubmit)="saveMember()">
+  <label>Prénom</label>
+  <input type="text" [(ngModel)]="newMember.firstName" name="firstName" required />
+
+  <label>Nom</label>
+  <input type="text" [(ngModel)]="newMember.lastName" name="lastName" required />
+
+  <label>Email</label>
+  <input type="email" [(ngModel)]="newMember.email" name="email" required />
+
+  <label>Téléphone</label>
+  <input type="text" [(ngModel)]="newMember.phoneNumber" name="phoneNumber" />
+
+  <label>Poste</label>
+  <input type="text" [(ngModel)]="newMember.position" name="position" />
+
+  <label>Département</label>
+  <select [(ngModel)]="newMember.department" name="department">
+    <option *ngFor="let dept of teamMemberService.getDepartmentOptions()" [ngValue]="dept.value">
+      {{ dept.label }}
+    </option>
+  </select>
+
+  <label>Statut</label>
+  <select [(ngModel)]="newMember.employmentStatus" name="employmentStatus">
+    <option *ngFor="let status of teamMemberService.getEmploymentStatusOptions()" [ngValue]="status.value">
+      {{ status.label }}
+    </option>
+  </select>
+
+  <label>Actif ?</label>
+  <input type="checkbox" [(ngModel)]="newMember.isActive" name="isActive" />
+
+  <button type="submit">Enregistrer</button>
+  <button type="button" (click)="router.navigate(['/admin/team-member'])">Annuler</button>
+</form>

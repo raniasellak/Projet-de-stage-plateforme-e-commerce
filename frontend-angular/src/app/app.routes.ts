@@ -21,6 +21,8 @@ import { Boutique } from './boutique/boutique';
 import { Contact } from './contact/contact';
 import { Apropos } from './apropos/apropos';
 import { TeamMember } from './team-member/team-member';
+import { AddTeamMember } from './add-team-member/add-team-member';
+
 
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
@@ -54,6 +56,7 @@ export const routes: Routes = [
       { path: 'clients', component: Clients, canActivate: [AuthGuard] },
       { path: 'payments', component: Payments, canActivate: [AuthGuard] },
       { path: 'team-member', component: TeamMember, canActivate: [AuthGuard] },
+      { path: 'team-member/add', component: AddTeamMember, canActivate: [AuthGuard] },
 
       // Produits
       { path: 'products/add', component: AddProduct, canActivate: [AuthGuard] },
