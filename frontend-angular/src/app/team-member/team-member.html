@@ -1,0 +1,61 @@
+<div class="filters">
+  <input
+    type="text"
+    placeholder="Rechercher par nom, prénom ou email"
+    [(ngModel)]="search"
+    (input)="loadTeamMembers()"
+  />
+
+  <select [(ngModel)]="selectedDepartment" (change)="loadTeamMembers()">
+    <option [ngValue]="undefined">-- Tous les départements --</option>
+    <option *ngFor="let dept of teamMemberService.getDepartmentOptions()" [ngValue]="dept.value">
+      {{ dept.label }}
+    </option>
+  </select>
+
+  <select [(ngModel)]="isActive" (change)="loadTeamMembers()">
+    <option [ngValue]="undefined">-- Tous --</option>
+    <option [ngValue]="true">Actifs</option>
+    <option [ngValue]="false">Inactifs</option>
+  </select>
+
+  <button (click)="resetFilters()">Réinitialiser</button>
+</div>
+
+<div *ngIf="isLoading">Chargement...</div>
+<div *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<table *ngIf="!isLoading && teamMembers.length >= 0" border="1" cellpadding="5">
+  <thead>
+  <tr>
+    <th>Prénom</th>
+    <th>Nom</th>
+    <th>Email</th>
+    <th>Téléphone</th>
+    <th>Poste</th>
+    <th>Département</th>
+    <th>Statut</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let member of teamMembers">
+    <td>{{ member.firstName }}</td>
+    <td>{{ member.lastName }}</td>
+    <td>{{ member.email }}</td>
+    <td>{{ member.phoneNumber }}</td>
+    <td>{{ member.position }}</td>
+    <td>{{ teamMemberService.getDepartmentDisplayName(member.department) }}</td>
+    <td>{{ teamMemberService.getEmploymentStatusDisplayName(member.employmentStatus) }}</td>
+  </tr>
+  </tbody>
+</table>
+
+<div *ngIf="!isLoading && teamMembers.length === 0">
+  Aucun membre trouvé.
+</div>
+
+<div class="pagination" *ngIf="totalPages > 1">
+  <button (click)="prevPage()" [disabled]="page === 0">Précédent</button>
+  <span>Page {{ page + 1 }} sur {{ totalPages }}</span>
+  <button (click)="nextPage()" [disabled]="page === totalPages - 1">Suivant</button>
+</div>

@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { TeamMemberService, TeamMemberDto, Department, EmploymentStatus } from '../services/team-member.service';
+
 
 // Importation des composants partagés
 import { NavbarClient } from '../shared/navbar-client/navbar-client';

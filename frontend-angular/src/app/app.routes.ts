@@ -20,6 +20,7 @@ import { ViewProduct } from './view-product/view-product';
 import { Boutique } from './boutique/boutique';
 import { Contact } from './contact/contact';
 import { Apropos } from './apropos/apropos';
+import { TeamMember } from './team-member/team-member';
 
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
@@ -52,6 +53,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: Dashboard, canActivate: [AuthGuard] },
       { path: 'clients', component: Clients, canActivate: [AuthGuard] },
       { path: 'payments', component: Payments, canActivate: [AuthGuard] },
+      { path: 'team-member', component: TeamMember, canActivate: [AuthGuard] },
 
       // Produits
       { path: 'products/add', component: AddProduct, canActivate: [AuthGuard] },

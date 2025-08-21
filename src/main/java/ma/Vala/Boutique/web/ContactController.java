@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/contact")
-@CrossOrigin(origins = {"http://localhost:4200","http://localhost:55183"}) // Ajustez selon votre configuration
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:54094"}) // Ajustez selon votre configuration
 public class ContactController {
 
     @Autowired
