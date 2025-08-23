@@ -10,26 +10,43 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-    // Recherche par statut
+    // ==========================
+    // 🔹 Recherches simples
+    // ==========================
+
     Page<Reservation> findByStatut(StatutReservation statut, Pageable pageable);
+    List<Reservation> findByStatut(StatutReservation statut);
 
-    // Recherche par email du client
     Page<Reservation> findByEmailContainingIgnoreCase(String email, Pageable pageable);
+    List<Reservation> findByEmailOrderByDateCreationDesc(String email);
+    Page<Reservation> findByEmailOrderByDateCreationDesc(String email, Pageable pageable);
 
-    // Recherche par produit
     Page<Reservation> findByProduitId(Long produitId, Pageable pageable);
+    List<Reservation> findByProduitIdOrderByDateDepartAsc(Long produitId);
 
-    // Recherche par période
+    // ==========================
+    // 🔹 Recherche par période
+    // ==========================
+
     @Query("SELECT r FROM Reservation r WHERE r.dateDepart >= :dateDebut AND r.dateRetour <= :dateFin")
     List<Reservation> findByPeriode(@Param("dateDebut") LocalDate dateDebut,
                                     @Param("dateFin") LocalDate dateFin);
 
-    // Vérifier la disponibilité d'un produit pour une période donnée
+    @Query("SELECT r FROM Reservation r WHERE r.dateDepart >= :dateDebut " +
+            "AND r.dateDepart <= :dateFin ORDER BY r.dateDepart ASC")
+    List<Reservation> findReservationsByPeriod(@Param("dateDebut") LocalDate dateDebut,
+                                               @Param("dateFin") LocalDate dateFin);
+
+    // ==========================
+    // 🔹 Disponibilité & conflits
+    // ==========================
+
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.produit.id = :produitId " +
             "AND r.statut IN ('EN_ATTENTE', 'CONFIRMEE', 'EN_COURS') " +
             "AND ((r.dateDepart <= :dateDepart AND r.dateRetour >= :dateDepart) " +
@@ -39,23 +56,67 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                          @Param("dateDepart") LocalDate dateDepart,
                                          @Param("dateRetour") LocalDate dateRetour);
 
-    // Recherche des réservations d'un client par email
-    List<Reservation> findByEmailOrderByDateCreationDesc(String email);
+    @Query("SELECT r FROM Reservation r WHERE r.produit.id = :produitId " +
+            "AND r.statut IN ('EN_ATTENTE', 'CONFIRMEE', 'EN_COURS') " +
+            "AND ((r.dateDepart < :dateRetour AND r.dateRetour > :dateDepart))")
+    List<Reservation> findConflictingReservations(@Param("produitId") Long produitId,
+                                                  @Param("dateDepart") LocalDate dateDepart,
+                                                  @Param("dateRetour") LocalDate dateRetour);
 
-    // Statistiques - nombre de réservations par mois
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.produit.id = :produitId " +
+            "AND r.statut IN ('CONFIRMEE', 'EN_COURS') " +
+            "AND r.dateDepart <= :dateRetour AND r.dateRetour >= :dateDepart")
+    Long countConfirmedReservationsForPeriod(@Param("produitId") Long produitId,
+                                             @Param("dateDepart") LocalDate dateDepart,
+                                             @Param("dateRetour") LocalDate dateRetour);
+
+    // ==========================
+    // 🔹 Statistiques
+    // ==========================
+
     @Query("SELECT YEAR(r.dateCreation), MONTH(r.dateCreation), COUNT(r) " +
             "FROM Reservation r " +
             "GROUP BY YEAR(r.dateCreation), MONTH(r.dateCreation) " +
             "ORDER BY YEAR(r.dateCreation) DESC, MONTH(r.dateCreation) DESC")
     List<Object[]> getReservationsStatsByMonth();
 
-    // Recherche des réservations à venir
+    long countByStatut(StatutReservation statut);
+
+    @Query("SELECT SUM(r.prixTotal) FROM Reservation r " +
+            "WHERE r.statut IN ('CONFIRMEE', 'EN_COURS', 'TERMINEE') " +
+            "AND r.dateDepart >= :dateDebut AND r.dateDepart <= :dateFin")
+    Double calculateRevenueByPeriod(@Param("dateDebut") LocalDate dateDebut,
+                                    @Param("dateFin") LocalDate dateFin);
+
+    // ==========================
+    // 🔹 Notifications / suivi
+    // ==========================
+
     @Query("SELECT r FROM Reservation r WHERE r.dateDepart > CURRENT_DATE " +
             "AND r.statut IN ('EN_ATTENTE', 'CONFIRMEE') " +
             "ORDER BY r.dateDepart ASC")
     List<Reservation> findUpcomingReservations();
 
-    // Recherche avancée
+    @Query("SELECT r FROM Reservation r WHERE r.statut IN ('CONFIRMEE', 'EN_COURS') " +
+            "ORDER BY r.dateDepart ASC")
+    List<Reservation> findActiveReservations();
+
+    @Query("SELECT r FROM Reservation r WHERE r.statut = 'EN_COURS' " +
+            "AND r.dateRetour = :date")
+    List<Reservation> findReservationsEndingOn(@Param("date") LocalDate date);
+
+    @Query("SELECT r FROM Reservation r WHERE r.statut = 'CONFIRMEE' " +
+            "AND r.dateDepart = :date")
+    List<Reservation> findReservationsStartingOn(@Param("date") LocalDate date);
+
+    @Query("SELECT r FROM Reservation r WHERE r.statut = 'EN_ATTENTE' " +
+            "AND r.dateCreation < :dateLimit")
+    List<Reservation> findExpiredPendingReservations(@Param("dateLimit") LocalDateTime dateLimit);
+
+    // ==========================
+    // 🔹 Recherche avancée
+    // ==========================
+
     @Query("SELECT r FROM Reservation r WHERE " +
             "(:email IS NULL OR LOWER(r.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
             "(:statut IS NULL OR r.statut = :statut) AND " +

@@ -23,6 +23,8 @@ import { Apropos } from './apropos/apropos';
 import { TeamMember } from './team-member/team-member';
 import { AddTeamMember } from './add-team-member/add-team-member';
 import { CarReservation } from './car-reservation/car-reservation';
+import { ReservationConfirmationComponent } from './reservation-confirmation/reservation-confirmation';
+import { ReservationSuccess } from './reservation-success/reservation-success';
 
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
@@ -37,7 +39,17 @@ export const routes: Routes = [
       { path: 'boutique', component: Boutique, canActivate: [AuthGuard] },
       { path: 'contact', component: Contact, canActivate: [AuthGuard] },
       { path: 'apropos', component: Apropos, canActivate: [AuthGuard] },
-      { path: 'reservation/:id', component: CarReservation, canActivate: [AuthGuard] }
+      { path: 'reservation/:id', component: CarReservation,  title: 'Réservation de véhicule',canActivate: [AuthGuard] },
+      {
+          path: 'reservation-confirmation',
+          component: ReservationConfirmationComponent,
+          title: 'Confirmation de réservation',canActivate: [AuthGuard]
+        },
+      {
+          path: 'reservation-success',
+          component: ReservationSuccess, // À créer si nécessaire
+          title: 'Réservation réussie',canActivate: [AuthGuard]
+        }
     ]
   },
 

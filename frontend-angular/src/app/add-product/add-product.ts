@@ -38,7 +38,7 @@ export class AddProduct {
   @Output() productAdded = new EventEmitter<void>();
 
   // Listes pour les selects
-  categories = ['Voiture', 'Moto', 'Accessoire', 'Pièce'];
+  categories = ['Manuelle', 'Automatique'];
   couleurs = ['Rouge', 'Bleu', 'Vert', 'Noir', 'Blanc', 'Jaune', 'Orange', 'Violet', 'Rose', 'Gris'];
   marques = ['Toyota', 'Honda', 'BMW', 'Mercedes', 'Audi', 'Ford', 'Volkswagen', 'Renault', 'Peugeot'];
 

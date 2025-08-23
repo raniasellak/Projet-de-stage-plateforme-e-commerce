@@ -146,4 +146,30 @@ export class ReservationService {
 
     return this.http.get<PaginatedResponse<Produit>>(`${this.apiUrl}/produits`, { params });
   }
+// Démarrer un paiement
+initiatePayment(paymentRequest: any): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/payments/initiate`, paymentRequest);
+}
+
+// Confirmer un paiement
+confirmPayment(transactionId: string, reservationId: number): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/payments/confirm`, {
+    transactionId,
+    reservationId
+  });
+}
+
+
+  // ✅ ENVOYER UN EMAIL DE CONFIRMATION
+  sendConfirmationEmail(reservationId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reservations/${reservationId}/send-confirmation`, {});
+  }
+
+  // ✅ GÉNÉRER UN CONTRAT (PDF ou autre)
+  generateContract(reservationId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/reservations/${reservationId}/generate-contract`, {
+      responseType: 'blob'
+    });
+  }
+
 }

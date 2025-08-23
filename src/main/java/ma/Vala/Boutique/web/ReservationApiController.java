@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:55492"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:60141"})
 public class ReservationApiController {
 
     @Autowired

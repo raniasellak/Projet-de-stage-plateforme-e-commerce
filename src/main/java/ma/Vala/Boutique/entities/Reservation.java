@@ -73,6 +73,9 @@ public class Reservation {
     @Column(name = "date_modification")
     private LocalDateTime dateModification;
 
+    @Column(name = "transaction_id")
+    private String transactionId;
+
     @PreUpdate
     protected void onUpdate() {
         dateModification = LocalDateTime.now();

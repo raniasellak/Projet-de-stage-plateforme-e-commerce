@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmation de Réservation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Styles généraux */
+    .confirmation-container {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f8d5e0 0%, #fce4ec 50%, #e3f2fd 100%);
+      min-height: 100vh;
+      padding: 20px 0;
+    }
+
+    .main-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Loading */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #033c4f;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Header */
+    .header-section {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .header-section h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #033c4f;
+      margin-bottom: 15px;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #666;
+    }
+
+    /* Confirmation card */
+    .confirmation-card {
+      background: white;
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    /* Statut */
+    .statut-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .statut-badge {
+      display: inline-block;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .statut-attente {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeaa7;
+    }
+
+    .statut-confirmee {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #28a745;
+    }
+
+    /* Détails de réservation */
+    .reservation-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .detail-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 15px;
+    }
+
+    .detail-section h3 {
+      font-weight: 600;
+      color: #033c4f;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #555;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* Véhicule info */
+    .vehicle-info {
+      background: white;
+      border: 2px solid #e1e5e9;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+
+    .vehicle-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .vehicle-image {
+      width: 100px;
+      height: 70px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .vehicle-details h4 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #033c4f;
+      margin-bottom: 5px;
+    }
+
+    .vehicle-details p {
+      color: #666;
+      margin: 0;
+    }
+
+    /* Récapitulatif prix */
+    .price-summary {
+      background: linear-gradient(135deg, #033c4f, #1976d2);
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+    }
+
+    .price-summary h3 {
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .price-total {
+      font-size: 1.4rem;
+      font-weight: 700;
+      border-top: 2px solid rgba(255, 255, 255, 0.3);
+      padding-top: 15px;
+      margin-top: 15px;
+    }
+
+    /* Actions */
+    .actions-section {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #495057;
+      border: 2px solid #dee2e6;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .payment-processing {
+      text-align: center;
+      padding: 20px;
+      background: #fff3cd;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .alert-danger {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 0 15px;
+      }
+
+      .header-section h1 {
+        font-size: 2rem;
+      }
+
+      .confirmation-card {
+        padding: 25px;
+      }
+
+      .reservation-details {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .vehicle-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .actions-section {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="confirmation-container">
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error && !loading" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <!-- Main content -->
+  <div *ngIf="!loading && !error && reservation" class="main-content">
+    <!-- Header -->
+    <div class="header-section">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h1>Réservation Confirmée</h1>
+      <p class="subtitle">Votre demande de réservation a été enregistrée avec succès</p>
+    </div>
+
+    <!-- Confirmation card -->
+    <div class="confirmation-card">
+      <!-- Statut -->
+      <div class="statut-section">
+          <span [class]="'statut-badge ' + getStatutClass(reservation.statut)">
+            {{ reservation.statutLabel }}
+          </span>
+        <p>Numéro de réservation : <strong>#{{ reservation.id }}</strong></p>
+      </div>
+
+      <!-- Véhicule -->
+      <div class="vehicle-info">
+        <div class="vehicle-header">
+          <img
+            [src]="reservation.produit.imageUrl"
+            [alt]="reservation.produit.nom"
+            class="vehicle-image"
+            *ngIf="reservation.produit.imageUrl"
+          >
+          <div class="vehicle-details">
+            <h4>{{ reservation.produit.nom }}</h4>
+            <p>{{ reservation.produit.marque }} • {{ reservation.produit.categorie }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Détails de réservation -->
+      <div class="reservation-details">
+        <!-- Informations client -->
+        <div class="detail-section">
+          <h3>
+            <i class="fas fa-user"></i>
+            Informations client
+          </h3>
+          <div class="detail-item">
+            <span class="detail-label">Nom complet :</span>
+            <span class="detail-value">{{ reservation.nom }} {{ reservation.prenom }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Email :</span>
+            <span class="detail-value">{{ reservation.email }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Téléphone :</span>
+            <span class="detail-value">{{ reservation.telephone }}</span>
+          </div>
+        </div>
+
+        <!-- Détails de location -->
+        <div class="detail-section">
+          <h3>
+            <i class="fas fa-calendar"></i>
+            Détails de location
+          </h3>
+          <div class="detail-item">
+            <span class="detail-label">Date de départ :</span>
+            <span class="detail-value">{{ formatDate(reservation.dateDepart) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Date de retour :</span>
+            <span class="detail-value">{{ formatDate(reservation.dateRetour) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Durée :</span>
+            <span class="detail-value">{{ reservation.nombreJours }} jour(s)</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Lieu de prise :</span>
+            <span class="detail-value">{{ getLieuLabel(reservation.lieuPrise) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Lieu de retour :</span>
+            <span class="detail-value">{{ getLieuLabel(reservation.lieuRetour) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Récapitulatif prix -->
+      <div class="price-summary">
+        <h3>Récapitulatif des prix</h3>
+        <div class="price-row">
+          <span>Location ({{ reservation.nombreJours }} jour(s))</span>
+          <span>{{ reservation.prixTotal }}€</span>
+        </div>
+        <div class="price-row">
+          <span>Assurance incluse</span>
+          <span>Incluse</span>
+        </div>
+        <div class="price-row">
+          <span>GPS</span>
+          <span>Inclus</span>
+        </div>
+        <div class="price-row price-total">
+          <span>Total à payer</span>
+          <span>{{ reservation.prixTotal }}€</span>
+        </div>
+      </div>
+
+      <!-- Processing payment message -->
+      <div *ngIf="processingPayment" class="payment-processing">
+        <i class="fas fa-credit-card fa-2x mb-3"></i>
+        <h4>Traitement du paiement en cours...</h4>
+        <p>Veuillez patienter, ne fermez pas cette page.</p>
+        <div class="spinner" style="margin: 20px auto;"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-section" *ngIf="!processingPayment">
+        <!-- Si réservation en attente, afficher bouton de paiement -->
+        <button
+          *ngIf="reservation.statut === 'EN_ATTENTE'"
+          class="btn btn-primary"
+          (click)="processPayment()"
+        >
+          <i class="fas fa-credit-card"></i>
+          Payer maintenant ({{ reservation.prixTotal }}€)
+        </button>
+
+        <!-- Autres actions -->
+        <button
+          *ngIf="reservation.statut === 'EN_ATTENTE'"
+          class="btn btn-secondary"
+          (click)="modifyReservation()"
+        >
+          <i class="fas fa-edit"></i>
+          Modifier
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          (click)="viewMyReservations()"
+        >
+          <i class="fas fa-list"></i>
+          Mes réservations
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          (click)="backToProducts()"
+        >
+          <i class="fas fa-car"></i>
+          Autres véhicules
+        </button>
+
+        <button
+          *ngIf="reservation.statut === 'EN_ATTENTE'"
+          class="btn btn-danger"
+          (click)="cancelReservation()"
+        >
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+      </div>
+
+      <!-- Message de confirmation -->
+      <div *ngIf="reservation.statut === 'CONFIRMEE'" class="alert" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+        <i class="fas fa-check-circle"></i>
+        <strong>Réservation confirmée et payée !</strong>
+        Vous recevrez bientôt un email avec les détails de votre contrat de location.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

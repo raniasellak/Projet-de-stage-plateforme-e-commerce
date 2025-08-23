@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Reservation } from './models/reservation';
+import { environment } from 'src/environments/environment';
+
 
 export interface Produit {
   id: number;
@@ -19,6 +21,37 @@ export interface Produit {
   imageUrl?: string;
   imagePublicId?: string;
 }
+
+// Interface pour la réponse de mise à jour de statut
+export interface UpdateStatusResponse {
+  success: boolean;
+  message: string;
+  reservation: {
+    id: number;
+    dateDepart: string;
+    dateRetour: string;
+    nom: string;
+    prenom: string;
+    telephone: string;
+    email: string;
+    lieuPrise: string;
+    lieuRetour: string;
+    prixTotal: number;
+    nombreJours: number;
+    statut: string;
+    statutLabel: string;
+    dateCreation: string;
+    produit: {
+      id: number;
+      nom: string;
+      marque: string;
+      categorie: string;
+      imageUrl?: string;
+    };
+  };
+}
+
+
 
 export interface ReservationRequest {
   produitId: number;
@@ -242,14 +275,21 @@ export class CarReservation implements OnInit {
     };
 
     this.createReservation(reservationRequest).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('Réservation créée:', response);
-        // Redirection vers une page de confirmation
+       const reservationId = response?.reservation?.id || response?.id;
+               if (reservationId) {
         this.router.navigate(['/reservation-confirmation'], {
-          queryParams: { id: response.id }
+          queryParams: { id: response.reservation.id }
         });
-      },
-      error: (error) => {
+             } else {
+               // Fallback si l'ID n'est pas dans la structure attendue
+               this.router.navigate(['/reservation-confirmation'], {
+                 queryParams: { id: response.id || response.reservation?.id }
+               });
+             }
+           },
+      error: (error: any) => {
         console.error('Erreur lors de la réservation:', error);
         this.error = 'Erreur lors de la création de la réservation. Veuillez réessayer.';
         this.submitting = false;
@@ -290,5 +330,7 @@ export class CarReservation implements OnInit {
 formatFromString(dateString: string): string {
   return dateString ? new Date(dateString).toLocaleDateString('fr-FR') : '';
 }
+
+
 
 }
