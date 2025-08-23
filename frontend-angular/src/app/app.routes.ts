@@ -22,7 +22,7 @@ import { Contact } from './contact/contact';
 import { Apropos } from './apropos/apropos';
 import { TeamMember } from './team-member/team-member';
 import { AddTeamMember } from './add-team-member/add-team-member';
-
+import { CarReservation } from './car-reservation/car-reservation';
 
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
@@ -36,7 +36,8 @@ export const routes: Routes = [
       { path: 'home', component: Home, canActivate: [AuthGuard] },
       { path: 'boutique', component: Boutique, canActivate: [AuthGuard] },
       { path: 'contact', component: Contact, canActivate: [AuthGuard] },
-      { path: 'apropos', component: Apropos, canActivate: [AuthGuard] }
+      { path: 'apropos', component: Apropos, canActivate: [AuthGuard] },
+      { path: 'reservation/:id', component: CarReservation, canActivate: [AuthGuard] }
     ]
   },
 

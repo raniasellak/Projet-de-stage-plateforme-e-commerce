@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject  } from '@angular/core';
 import { Product } from '../products/models/product.model';
 import { CommonModule } from '@angular/common';
 import { CurrencyPipe } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-car-cards',
@@ -11,7 +12,7 @@ import { CurrencyPipe } from '@angular/common';
   styleUrls: ['./car-cards.css']
 })
 export class CarCards implements OnInit {
-
+  private router = inject(Router);
   @Input() voitures: Product[] = [];
   @Input() loading: boolean = false;
   @Output() onRentClick = new EventEmitter<Product>();
@@ -106,27 +107,37 @@ export class CarCards implements OnInit {
   }
 
   onRentCar(voiture: Product): void {
-    // Émettre l'événement vers le composant parent
-    this.onRentClick.emit(voiture);
-    console.log(`Tentative de location de: ${voiture.nom}`);
-  }
+      // Vérifier que la voiture est disponible
+      if (!voiture.quantite || voiture.quantite === 0) {
+        console.log(`La voiture ${voiture.nom} n'est pas disponible`);
+        return;
+      }
 
-  getBadgeColor(categorie: string | undefined): string {
-    if (!categorie) return '#033c4f';
+      // Émettre l'événement vers le composant parent (si nécessaire)
+      this.onRentClick.emit(voiture);
 
-    switch (categorie.toLowerCase()) {
-      case 'berline':
-        return '#033c4f';
-      case 'suv':
-        return '#1976d2';
-      case 'électrique':
-        return '#4caf50';
-      case 'sport':
-        return '#f44336';
-      default:
-        return '#033c4f';
+      // Naviguer vers la page de réservation avec l'ID de la voiture
+      this.router.navigate(['/reservation', voiture.id]);
+
+      console.log(`Navigation vers la réservation de: ${voiture.nom} (ID: ${voiture.id})`);
     }
-  }
+
+    getBadgeColor(categorie: string | undefined): string {
+      if (!categorie) return '#033c4f';
+
+      switch (categorie.toLowerCase()) {
+        case 'berline':
+          return '#033c4f';
+        case 'suv':
+          return '#1976d2';
+        case 'électrique':
+          return '#4caf50';
+        case 'sport':
+          return '#f44336';
+        default:
+          return '#033c4f';
+      }
+    }
 
   getAvailabilityStatus(quantite: number | undefined): {text: string, class: string} {
     if (!quantite || quantite === 0) return { text: 'Indisponible', class: 'unavailable' };
