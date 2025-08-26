@@ -1,0 +1,45 @@
+<h2>Liste des réservations</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Client</th>
+    <th>Produit</th>
+    <th>Date</th>
+    <th>Prix Total</th>
+    <th>Statut</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let r of reservations">
+    <td>{{ r.id }}</td>
+    <td>{{ r.nom }} {{ r.prenom }}</td>
+    <td>{{ r.produit.nom }} ({{ r.produit.marque }})</td>
+    <td>{{ r.dateDepart }} → {{ r.dateRetour }}</td>
+    <td>{{ r.prixTotal }} DH</td>
+    <td>{{ r.statutLabel }}</td>
+    <td>
+      <button (click)="changerStatut(r.id, 'CONFIRMEE')">Confirmer</button>
+      <button (click)="changerStatut(r.id, 'ANNULEE')">Annuler</button>
+      <button (click)="supprimer(r.id)">Supprimer</button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<!-- Pagination -->
+<div style="margin-top: 20px; text-align: center;">
+  <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+    ⬅ Précédent
+  </button>
+
+  <span style="margin: 0 15px;">
+    Page {{ currentPage + 1 }} / {{ totalPages }}
+  </span>
+
+  <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage + 1 >= totalPages">
+    Suivant ➡
+  </button>
+</div>

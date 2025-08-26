@@ -25,7 +25,7 @@ import { AddTeamMember } from './add-team-member/add-team-member';
 import { CarReservation } from './car-reservation/car-reservation';
 import { ReservationConfirmationComponent } from './reservation-confirmation/reservation-confirmation';
 import { ReservationSuccess } from './reservation-success/reservation-success';
-
+import { Reservations} from './reservations/reservations';
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
 import { AuthGuard } from './guards/auth-guard';
@@ -70,6 +70,7 @@ export const routes: Routes = [
       { path: 'payments', component: Payments, canActivate: [AuthGuard] },
       { path: 'team-member', component: TeamMember, canActivate: [AuthGuard] },
       { path: 'team-member/add', component: AddTeamMember, canActivate: [AuthGuard] },
+      { path: 'reservations', component: Reservations, canActivate: [AuthGuard] },
 
       // Produits
       { path: 'products/add', component: AddProduct, canActivate: [AuthGuard] },
