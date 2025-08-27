@@ -1,9 +1,173 @@
-<div class="container">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Dashboard title</mat-card-title>
-    </mat-card-header>
-    <mat-divider></mat-divider>
-    <mat-card-content>Dashboard Content</mat-card-content>
-  </mat-card>
+<div class="dashboard-container">
+
+  <!-- Header avec bouton refresh -->
+  <div class="dashboard-header">
+    <h2>Dashboard - Location de Voitures</h2>
+    <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading" class="dashboard-content">
+
+    <!-- Cards de statistiques -->
+    <div class="stats-grid">
+      <mat-card class="stat-card vehicles-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>directions_car</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ stats.totalVehicles }}</h3>
+              <p>Total Véhicules</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card available-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ stats.availableVehicles }}</h3>
+              <p>Disponibles</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card rented-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ stats.rentedVehicles }}</h3>
+              <p>En Location</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card revenue-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <div class="stat-icon">
+              <mat-icon>euro_symbol</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ stats.monthlyRevenue | currency:'EUR':'symbol':'1.0-0' }}</h3>
+              <p>Revenus du Mois</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Réservations récentes et Alertes -->
+    <div class="main-content">
+
+      <!-- Réservations récentes -->
+      <mat-card class="reservations-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>event</mat-icon>
+            Réservations Récentes
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <table mat-table [dataSource]="recentReservations" class="reservations-table">
+
+            <ng-container matColumnDef="customerName">
+              <th mat-header-cell *matHeaderCellDef>Client</th>
+              <td mat-cell *matCellDef="let reservation">{{ reservation.customerName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="vehicleModel">
+              <th mat-header-cell *matHeaderCellDef>Véhicule</th>
+              <td mat-cell *matCellDef="let reservation">{{ reservation.vehicleModel }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="startDate">
+              <th mat-header-cell *matHeaderCellDef>Date début</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.startDate | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let reservation">
+                <mat-chip [color]="getStatusColor(reservation.status)" selected>
+                  {{ getStatusText(reservation.status) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="totalAmount">
+              <th mat-header-cell *matHeaderCellDef>Montant</th>
+              <td mat-cell *matCellDef="let reservation">
+                {{ reservation.totalAmount | currency:'EUR':'symbol':'1.2-2' }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+
+          <div *ngIf="recentReservations.length === 0" class="no-data">
+            <p>Aucune réservation récente</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Alertes -->
+      <mat-card class="alerts-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>warning</mat-icon>
+            Alertes ({{ alerts.length }})
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div *ngIf="alerts.length === 0" class="no-alerts">
+            <mat-icon color="primary">check_circle</mat-icon>
+            <p>Aucune alerte</p>
+          </div>
+
+          <div *ngFor="let alert of alerts" class="alert-item">
+            <mat-chip [color]="getAlertColor(alert.priority)" selected>
+              <mat-icon matChipAvatar>{{ alert.type === 'maintenance' ? 'build' : 'schedule' }}</mat-icon>
+              <strong>{{ alert.vehicleModel }}</strong>
+            </mat-chip>
+            <p>{{ alert.message }}</p>
+            <small>{{ alert.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error && !loading" class="error-message">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
 </div>
