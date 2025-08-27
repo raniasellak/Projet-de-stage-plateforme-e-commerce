@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Reservation } from 'src/app/car-reservation/models/reservation';
 
 export interface Produit {
   id: number;
@@ -31,7 +32,7 @@ export interface ReservationRequest {
   nombreJours: number;
 }
 
-export interface Reservation {
+export interface ReservationDto {
   id: number;
   dateDepart: string;
   dateRetour: string;
@@ -104,8 +105,8 @@ export class ReservationService {
   }
 
   // Récupérer une réservation par ID
-  getReservation(id: number): Observable<Reservation> {
-    return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
+  getReservation(id: number): Observable<ReservationDto> {
+    return this.http.get<ReservationDto>(`${this.apiUrl}/reservations/${id}`);
   }
 
   // Récupérer les réservations d'un client
@@ -171,5 +172,15 @@ confirmPayment(transactionId: string, reservationId: number): Observable<any> {
       responseType: 'blob'
     });
   }
+// src/app/car-reservation/services/reservation.service.ts
+
+cancelPayPalPayment(reservationId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/paypal/cancel/${reservationId}`, {});
+}
+
+capturePayPalPayment(orderId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/paypal/capture/${orderId}`, {});
+}
+
 
 }

@@ -23,9 +23,11 @@ import { Apropos } from './apropos/apropos';
 import { TeamMember } from './team-member/team-member';
 import { AddTeamMember } from './add-team-member/add-team-member';
 import { CarReservation } from './car-reservation/car-reservation';
-import { ReservationConfirmationComponent } from './reservation-confirmation/reservation-confirmation';
+import { ReservationConfirmationComponent  } from './reservation-confirmation/reservation-confirmation';
 import { ReservationSuccess } from './reservation-success/reservation-success';
 import { Reservations} from './reservations/reservations';
+import { PaymentSuccess } from './payment-success/payment-success';
+import { PaymentCancel} from './payment-cancel/payment-cancel';
 // Guards
 import { AuthorizationGuard } from './guards/authorization.guard';
 import { AuthGuard } from './guards/auth-guard';
@@ -40,6 +42,9 @@ export const routes: Routes = [
       { path: 'contact', component: Contact, canActivate: [AuthGuard] },
       { path: 'apropos', component: Apropos, canActivate: [AuthGuard] },
       { path: 'reservation/:id', component: CarReservation,  title: 'Réservation de véhicule',canActivate: [AuthGuard] },
+      // Routes PayPal
+        { path: 'payment-success', component: PaymentSuccess , canActivate: [AuthGuard]},
+        { path: 'payment-cancel', component: PaymentCancel , canActivate: [AuthGuard]},
       {
           path: 'reservation-confirmation',
           component: ReservationConfirmationComponent,

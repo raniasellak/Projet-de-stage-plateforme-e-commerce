@@ -5,7 +5,9 @@ import ma.Vala.Boutique.entities.Reservation;
 import ma.Vala.Boutique.entities.Produit;
 import ma.Vala.Boutique.repository.ReservationRepository;
 import ma.Vala.Boutique.repository.ProduitRepository;
+import ma.Vala.Boutique.service.PayPalService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +28,17 @@ public class PaymentController {
     @Autowired
     private ProduitRepository produitRepository;
 
-    // Initier un paiement
-    @PostMapping("/initiate")
-    public ResponseEntity<?> initiatePayment(@Valid @RequestBody PaymentRequest request) {
+    @Autowired
+    private PayPalService payPalService;
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
+
+    // Initier un paiement PayPal
+    @PostMapping("/initiate-paypal")
+    public ResponseEntity<?> initiatePayPalPayment(@Valid @RequestBody PayPalPaymentRequest request) {
         try {
-            System.out.println("=== DEBUG INITIATION PAIEMENT ===");
+            System.out.println("=== DEBUG INITIATION PAIEMENT PAYPAL ===");
             System.out.println("Réservation ID: " + request.getReservationId());
             System.out.println("Montant: " + request.getAmount());
 
@@ -55,131 +63,131 @@ public class PaymentController {
                         .body(createErrorResponse("Montant incorrect"));
             }
 
-            // Simuler l'intégration avec un service de paiement (Stripe, PayPal, etc.)
-            // Dans un vrai projet, vous intégreriez ici votre service de paiement
-            String transactionId = generateTransactionId();
+            // URLs de retour PayPal
+            String returnUrl = frontendBaseUrl + "/payment-success?reservationId=" + reservation.getId();
+            String cancelUrl = frontendBaseUrl + "/payment-cancel?reservationId=" + reservation.getId();
 
-            // Pour cette simulation, on considère que le paiement est immédiatement réussi
-            // Dans la réalité, le client serait redirigé vers la plateforme de paiement
+            // Description du paiement
+            String description = String.format("Location %s - %s (%d jours)",
+                    reservation.getProduit().getMarque(),
+                    reservation.getProduit().getNom(),
+                    reservation.getNombreJours());
+
+            // Créer le paiement PayPal
+            Map<String, Object> paypalResponse = payPalService.createPayment(
+                    request.getAmount(),
+                    "EUR",
+                    returnUrl,
+                    cancelUrl,
+                    description
+            );
+
+            // Sauvegarder l'ID PayPal dans la réservation
+            reservation.setTransactionId((String) paypalResponse.get("id"));
+            reservation.setPaymentMethod("PAYPAL");
+            reservation.setPaymentStatus("PENDING");
+            reservationRepository.save(reservation);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("transactionId", transactionId);
-            response.put("message", "Paiement initié avec succès");
-            response.put("paymentUrl", null); // Pas de redirection pour cette simulation
+            response.put("paypalOrderId", paypalResponse.get("id"));
+            response.put("approvalUrl", paypalResponse.get("approvalUrl"));
+            response.put("message", "Paiement PayPal créé avec succès");
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'initiation du paiement: " + e.getMessage());
+            System.err.println("Erreur lors de l'initiation du paiement PayPal: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Erreur lors de l'initiation du paiement"));
+                    .body(createErrorResponse("Erreur lors de l'initiation du paiement PayPal"));
         }
     }
 
-    // Confirmer un paiement
-    @PostMapping("/confirm")
-    public ResponseEntity<?> confirmPayment(@Valid @RequestBody PaymentConfirmRequest request) {
+    // Capturer le paiement PayPal après approbation
+    @PostMapping("/capture-paypal/{orderId}")
+    public ResponseEntity<?> capturePayPalPayment(@PathVariable String orderId) {
         try {
-            System.out.println("=== DEBUG CONFIRMATION PAIEMENT ===");
-            System.out.println("Transaction ID: " + request.getTransactionId());
-            System.out.println("Réservation ID: " + request.getReservationId());
+            System.out.println("=== DEBUG CAPTURE PAIEMENT PAYPAL ===");
+            System.out.println("Order ID: " + orderId);
 
-            // Vérifier que la réservation existe
-            Optional<Reservation> reservationOpt = reservationRepository.findById(request.getReservationId());
+            // Trouver la réservation avec cet orderId
+            Optional<Reservation> reservationOpt = reservationRepository.findByTransactionId(orderId);
             if (!reservationOpt.isPresent()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Réservation non trouvée"));
+                        .body(createErrorResponse("Réservation non trouvée pour cette transaction"));
             }
 
             Reservation reservation = reservationOpt.get();
 
-            // Simuler la vérification du paiement auprès du service de paiement
-            // Dans un vrai projet, vous vérifieriez le statut auprès de Stripe/PayPal/etc.
-            boolean paymentSuccessful = verifyPaymentWithProvider(request.getTransactionId());
+            // Capturer le paiement chez PayPal
+            Map<String, Object> captureResponse = payPalService.capturePayment(orderId);
 
-            if (!paymentSuccessful) {
+            if ("COMPLETED".equals(captureResponse.get("status"))) {
+                // Mettre à jour la réservation
+                reservation.setStatut(Reservation.StatutReservation.CONFIRMEE);
+                reservation.setPaymentStatus("COMPLETED");
+                reservation.setDateModification(LocalDateTime.now());
+
+                Reservation updatedReservation = reservationRepository.save(reservation);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Paiement PayPal confirmé avec succès");
+                response.put("reservation", createReservationResponse(updatedReservation));
+
+                return ResponseEntity.ok(response);
+            } else {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Le paiement a échoué ou n'a pas été trouvé"));
+                        .body(createErrorResponse("Le paiement PayPal n'a pas été complété"));
             }
 
-            // Mettre à jour le statut de la réservation
-            reservation.setStatut(Reservation.StatutReservation.CONFIRMEE);
-            reservation.setDateModification(LocalDateTime.now());
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la capture du paiement PayPal: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Erreur lors de la capture du paiement PayPal"));
+        }
+    }
 
-            // Optionnel : enregistrer l'ID de transaction
-            // reservation.setTransactionId(request.getTransactionId());
-            // (nécessite d'ajouter ce champ à votre entité Reservation)
+    // Vérifier le statut d'un paiement PayPal
+    @GetMapping("/status-paypal/{orderId}")
+    public ResponseEntity<?> checkPayPalPaymentStatus(@PathVariable String orderId) {
+        try {
+            Map<String, Object> paypalStatus = payPalService.getPaymentDetails(orderId);
+            return ResponseEntity.ok(paypalStatus);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Erreur lors de la vérification du paiement PayPal"));
+        }
+    }
 
-            Reservation updatedReservation = reservationRepository.save(reservation);
+    // Gérer l'annulation PayPal
+    @PostMapping("/cancel-paypal")
+    public ResponseEntity<?> cancelPayPalPayment(@RequestBody Map<String, Object> request) {
+        try {
+            Long reservationId = Long.valueOf(request.get("reservationId").toString());
 
-            // Envoyer email de confirmation (optionnel)
-            // sendConfirmationEmail(updatedReservation);
+            Optional<Reservation> reservationOpt = reservationRepository.findById(reservationId);
+            if (reservationOpt.isPresent()) {
+                Reservation reservation = reservationOpt.get();
+                reservation.setPaymentStatus("CANCELLED");
+                reservationRepository.save(reservation);
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Paiement confirmé avec succès");
-            response.put("reservation", createReservationResponse(updatedReservation));
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la confirmation du paiement: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Erreur lors de la confirmation du paiement"));
-        }
-    }
-
-    // Vérifier le statut d'un paiement
-    @GetMapping("/status/{transactionId}")
-    public ResponseEntity<?> checkPaymentStatus(@PathVariable String transactionId) {
-        try {
-            // Simuler la vérification du statut auprès du service de paiement
-            boolean paymentSuccessful = verifyPaymentWithProvider(transactionId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", paymentSuccessful);
-            response.put("transactionId", transactionId);
-            response.put("message", paymentSuccessful ? "Paiement réussi" : "Paiement en cours ou échoué");
+            response.put("message", "Paiement annulé");
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Erreur lors de la vérification du paiement"));
+                    .body(createErrorResponse("Erreur lors de l'annulation"));
         }
     }
 
-    // Méthodes utilitaires privées
-
-    private String generateTransactionId() {
-        // Génère un ID de transaction unique
-        return "TXN_" + System.currentTimeMillis() + "_" + (int)(Math.random() * 10000);
-    }
-
-    private boolean verifyPaymentWithProvider(String transactionId) {
-        // Simulation : dans un vrai projet, vous feriez une requête à votre service de paiement
-        // Pour cette simulation, on considère que tous les paiements réussissent
-        System.out.println("Vérification du paiement pour transaction: " + transactionId);
-
-        // Simuler un délai de vérification
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        return true; // Simuler un paiement réussi
-    }
-
-    private void sendConfirmationEmail(Reservation reservation) {
-        // Implémentation de l'envoi d'email de confirmation
-        System.out.println("Envoi d'email de confirmation à: " + reservation.getEmail());
-        // Ici vous intégreriez votre service d'email (JavaMailSender, etc.)
-    }
-
+    // Méthodes utilitaires
     private Map<String, Object> createReservationResponse(Reservation reservation) {
         Map<String, Object> response = new HashMap<>();
         response.put("id", reservation.getId());
@@ -217,14 +225,11 @@ public class PaymentController {
     }
 
     // DTOs
-
-    public static class PaymentRequest {
+    public static class PayPalPaymentRequest {
         private Long reservationId;
         private Double amount;
-        private String currency;
-        private String paymentMethod;
+        private String currency = "EUR";
 
-        // Getters et Setters
         public Long getReservationId() { return reservationId; }
         public void setReservationId(Long reservationId) { this.reservationId = reservationId; }
 
@@ -233,20 +238,5 @@ public class PaymentController {
 
         public String getCurrency() { return currency; }
         public void setCurrency(String currency) { this.currency = currency; }
-
-        public String getPaymentMethod() { return paymentMethod; }
-        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    }
-
-    public static class PaymentConfirmRequest {
-        private String transactionId;
-        private Long reservationId;
-
-        // Getters et Setters
-        public String getTransactionId() { return transactionId; }
-        public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
-
-        public Long getReservationId() { return reservationId; }
-        public void setReservationId(Long reservationId) { this.reservationId = reservationId; }
     }
 }

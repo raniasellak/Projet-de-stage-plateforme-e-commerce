@@ -1,0 +1,228 @@
+<div class="payment-result-container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Finalisation de votre paiement...</p>
+  </div>
+
+  <!-- Success -->
+  <div *ngIf="!loading && success && reservation" class="success-container">
+    <div class="success-content">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+
+      <h1>Paiement Réussi !</h1>
+      <p class="subtitle">Votre réservation a été confirmée et payée avec succès.</p>
+
+      <div class="reservation-summary">
+        <h3>Récapitulatif</h3>
+        <div class="summary-item">
+          <span>Réservation #{{ reservation.id }}</span>
+          <span>{{ reservation.prixTotal }}€</span>
+        </div>
+        <div class="summary-item">
+          <span>Véhicule</span>
+          <span>{{ reservation.produit.marque }} {{ reservation.produit.nom }}</span>
+        </div>
+        <div class="summary-item">
+          <span>Période</span>
+          <span>{{ reservation.nombreJours }} jour(s)</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" (click)="goToReservation()">
+          <i class="fas fa-eye"></i>
+          Voir ma réservation
+        </button>
+        <button class="btn btn-secondary" (click)="goToMyReservations()">
+          <i class="fas fa-list"></i>
+          Mes réservations
+        </button>
+        <button class="btn btn-outline" (click)="goToProducts()">
+          <i class="fas fa-car"></i>
+          Autres véhicules
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading && error" class="error-container">
+    <div class="error-content">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+
+      <h1>Erreur de Paiement</h1>
+      <p class="error-message">{{ error }}</p>
+
+      <div class="actions">
+        <button class="btn btn-primary" (click)="returnToReservation()" *ngIf="reservationId">
+          <i class="fas fa-arrow-left"></i>
+          Retour à la réservation
+        </button>
+        <button class="btn btn-secondary" (click)="goToProducts()">
+          <i class="fas fa-home"></i>
+          Retour aux véhicules
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .payment-result-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8d5e0 0%, #fce4ec 50%, #e3f2fd 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .loading-container, .success-container, .error-container {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .success-content, .error-content {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 25px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+  }
+
+  .success-icon {
+    font-size: 5rem;
+    color: #28a745;
+    margin-bottom: 30px;
+  }
+
+  .error-icon {
+    font-size: 5rem;
+    color: #dc3545;
+    margin-bottom: 30px;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #033c4f;
+    margin-bottom: 15px;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 40px;
+  }
+
+  .error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 40px;
+  }
+
+  .reservation-summary {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+  }
+
+  .reservation-summary h3 {
+    color: #033c4f;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+  }
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .summary-item:last-child {
+    border-bottom: none;
+  }
+
+  .actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: #033c4f;
+    border: 2px solid #033c4f;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f0f0f0;
+    border-top: 4px solid #033c4f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .success-content, .error-content {
+      padding: 30px 25px;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .actions {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

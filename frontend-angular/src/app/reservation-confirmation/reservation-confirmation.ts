@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReservationService } from '../car-reservation/services/reservation.service';
-
+import { Reservation } from '../car-reservation/models/reservation';
 
 export interface ReservationConfirmation {
   id: number;
@@ -19,6 +19,9 @@ export interface ReservationConfirmation {
   statut: string;
   statutLabel: string;
   dateCreation: string;
+  transactionId?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
   produit: {
     id: number;
     nom: string;
@@ -35,12 +38,13 @@ export interface ReservationConfirmation {
   styleUrls: ['./reservation-confirmation.css'],
   imports: [CommonModule]
 })
-export class ReservationConfirmationComponent implements OnInit {
+export class ReservationConfirmationComponent  implements OnInit {
 
   reservation: ReservationConfirmation | null = null;
   loading = true;
   error: string | null = null;
   processingPayment = false;
+  paymentMethod: 'paypal' | 'card' | null = null;
 
   // Options de lieux pour l'affichage
   lieux = [
@@ -86,47 +90,88 @@ export class ReservationConfirmationComponent implements OnInit {
     });
   }
 
-  // Méthode pour traiter le paiement
+  // Sélectionner le mode de paiement
+  selectPaymentMethod(method: 'paypal' | 'card'): void {
+    this.paymentMethod = method;
+  }
+
+  // Traiter le paiement selon la méthode choisie
   processPayment(): void {
     if (!this.reservation) return;
 
-    this.processingPayment = true;
+    if (this.paymentMethod === 'paypal') {
+      this.processPayPalPayment();
+    } else if (this.paymentMethod === 'card') {
+      this.processCardPayment();
+    }
+  }
 
-    // Préparer la demande de paiement
-    const paymentRequest = {
+  // Traitement paiement PayPal
+  processPayPalPayment(): void {
+    if (!this.reservation) return;
+
+    this.processingPayment = true;
+    this.error = null;
+
+    const paypalRequest = {
       reservationId: this.reservation.id,
       amount: this.reservation.prixTotal,
-      currency: 'EUR',
-      paymentMethod: 'card' // Ou selon votre système
+      currency: 'EUR'
     };
 
-    // Initier le paiement
-    this.reservationService.initiatePayment(paymentRequest).subscribe({
-      next: (paymentResponse) => {
-        if (paymentResponse.success) {
-          // Si le paiement nécessite une redirection (ex: PayPal, Stripe)
-          if (paymentResponse.paymentUrl) {
-            window.location.href = paymentResponse.paymentUrl;
-          } else {
-            // Paiement direct réussi, confirmer immédiatement
-            this.confirmPayment(paymentResponse.transactionId!);
-          }
+    this.reservationService.initiatePayment(paypalRequest).subscribe({
+      next: (response: any) => {
+        console.log('PayPal payment initiated:', response);
+        if (response.success && response.approvalUrl) {
+          // Rediriger vers PayPal pour approbation
+          window.location.href = response.approvalUrl;
         } else {
-          this.handlePaymentError(paymentResponse.message);
+          this.handlePaymentError('Erreur lors de l\'initiation du paiement PayPal');
         }
       },
-      error: (error) => {
-        this.handlePaymentError('Erreur lors de l\'initiation du paiement');
+      error: (error: any) => {
+        console.error('Erreur PayPal:', error);
+        this.handlePaymentError('Erreur lors de l\'initiation du paiement PayPal');
       }
     });
   }
 
-  // Confirmer le paiement
-  private confirmPayment(transactionId: string): void {
+  // Traitement paiement par carte (simulation)
+  processCardPayment(): void {
+    if (!this.reservation) return;
+
+    this.processingPayment = true;
+
+    // Préparer la demande de paiement (simulation)
+    const paymentRequest = {
+      reservationId: this.reservation.id,
+      amount: this.reservation.prixTotal,
+      currency: 'EUR',
+      paymentMethod: 'card'
+    };
+
+    // Simulation d'un paiement par carte
+    this.reservationService.initiatePayment(paymentRequest).subscribe({
+      next: (paymentResponse) => {
+        if (paymentResponse.success) {
+          // Paiement direct réussi
+          this.confirmCardPayment(paymentResponse.transactionId!);
+        } else {
+          this.handlePaymentError(paymentResponse.message);
+        }
+      },
+      error: (error: any) => {
+        this.handlePaymentError('Erreur lors de l\'initiation du paiement par carte');
+      }
+    });
+  }
+
+  // Confirmer le paiement par carte
+  private confirmCardPayment(transactionId: string): void {
     if (!this.reservation) return;
 
     this.reservationService.confirmPayment(transactionId, this.reservation.id).subscribe({
-      next: (response) => {
+      next: (response:any) => {
         if (response.success) {
           this.reservation = response.reservation;
           this.processingPayment = false;
@@ -135,7 +180,7 @@ export class ReservationConfirmationComponent implements OnInit {
           this.handlePaymentError(response.message);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.handlePaymentError('Erreur lors de la confirmation du paiement');
       }
     });
@@ -148,35 +193,8 @@ export class ReservationConfirmationComponent implements OnInit {
     console.error('Erreur de paiement:', message);
   }
 
-  // Mettre à jour le statut de la réservation
-  private updateReservationStatus(nouveauStatut: string): void {
-    if (!this.reservation) return;
-
-    this.reservationService.updateReservationStatus(this.reservation.id, nouveauStatut)
-      .subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.reservation = response.reservation;
-            this.processingPayment = false;
-            // Redirection vers la page de succès ou mise à jour de l'affichage
-            this.showPaymentSuccess();
-          }
-        },
-        error: (error) => {
-          console.error('Erreur lors de la mise à jour du statut:', error);
-          this.processingPayment = false;
-          this.error = 'Erreur lors du traitement du paiement';
-        }
-      });
-  }
-
   private showPaymentSuccess(): void {
-    // Ici vous pouvez soit :
-    // 1. Afficher un message de succès sur la même page
-    // 2. Rediriger vers une page de succès dédiée
-    // 3. Télécharger/afficher le contrat de location
-
-    // Exemple : redirection vers une page de succès
+    // Redirection vers une page de succès
     setTimeout(() => {
       this.router.navigate(['/reservation-success'], {
         queryParams: { id: this.reservation?.id }
@@ -210,7 +228,7 @@ export class ReservationConfirmationComponent implements OnInit {
     }
   }
 
-  // Annuler la réservation (optionnel)
+  // Annuler la réservation
   cancelReservation(): void {
     if (!this.reservation) return;
 
@@ -219,11 +237,10 @@ export class ReservationConfirmationComponent implements OnInit {
     }
   }
 
-  // Modifier la réservation (optionnel)
+  // Modifier la réservation
   modifyReservation(): void {
     if (!this.reservation) return;
 
-    // Redirection vers le formulaire de réservation avec les données pré-remplies
     this.router.navigate(['/car-reservation', this.reservation.produit.id], {
       queryParams: {
         modify: this.reservation.id,
@@ -231,6 +248,24 @@ export class ReservationConfirmationComponent implements OnInit {
         dateRetour: this.reservation.dateRetour
       }
     });
+  }
+
+  // Mettre à jour le statut de la réservation
+  private updateReservationStatus(nouveauStatut: string): void {
+    if (!this.reservation) return;
+
+    this.reservationService.updateReservationStatus(this.reservation.id, nouveauStatut)
+      .subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            this.reservation = response.reservation;
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors de la mise à jour du statut:', error);
+          this.error = 'Erreur lors du traitement';
+        }
+      });
   }
 
   // Retour à la liste des produits
