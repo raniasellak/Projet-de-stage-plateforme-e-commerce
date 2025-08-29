@@ -1,105 +1,140 @@
-<!-- Navbar (barre du haut) -->
-<mat-toolbar style="background-color: pink; color: white;">
-  <!-- Logo à gauche pour les utilisateurs USER -->
-  <div *ngIf="authService.authenticated && !authService.roles.includes('ADMIN')" class="logo" style="margin-right: 15px;">
-    <img src="/assets/logo-mon-agence.png" class="logo-img" style="height: 50px;" />
-  </div>
 
-  <!-- Bouton menu hamburger seulement pour les ADMIN -->
-  <button *ngIf="authService.roles.includes('ADMIN')" mat-icon-button (click)="drawer.toggle()">
-    <mat-icon>menu</mat-icon>
-  </button>
+<div class="admin-container">
+  <!-- Sidebar -->
+  <mat-drawer-container
+    *ngIf="authService.authenticated && authService.roles.includes('ADMIN')"
+    class="drawer-container"
+    hasBackdrop="false">
 
-  <span class="spacer"></span>
-  <button mat-button routerLink="/home">Home</button>
-  <button mat-button routerLink="/admin/profile">Profile</button>
+    <mat-drawer
+      #drawer
+      mode="side"
+      position="start"
+      opened="true"
+      class="sidebar">
 
-  <!-- Menu Import visible seulement pour les ADMIN -->
-  <button *ngIf="authService.roles.includes('ADMIN')" mat-button [matMenuTriggerFor]="importMenu">
-    <mat-icon>arrow_drop_down</mat-icon>
-    Import
-  </button>
+      <!-- Logo -->
+      <div class="sidebar-header">
+        <img src="/assets/logo-mon-agence.png" alt="Logo" class="sidebar-logo">
+        <h3 class="sidebar-title">Mon Agence</h3>
+      </div>
 
-  <mat-menu #importMenu>
-    <button mat-menu-item routerLink="/admin/loadClients">Load Clients</button>
-    <button mat-menu-item routerLink="/admin/loadPayments">Load Payments</button>
-    <button mat-menu-item routerLink="/admin/loadProducts">Load Products</button>
-  </mat-menu>
+      <!-- Navigation -->
+      <mat-nav-list class="sidebar-nav">
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/dashboard" class="nav-link">
+            <mat-icon class="nav-icon">dashboard</mat-icon>
+            <span>Dashboard</span>
+          </a>
+        </mat-list-item>
 
-  <span class="spacer"></span>
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/reservations" class="nav-link">
+            <mat-icon class="nav-icon">event</mat-icon>
+            <span>Réservations</span>
+          </a>
+        </mat-list-item>
 
-  <!-- Affichage du nom d'utilisateur -->
-  <span *ngIf="authService.authenticated" style="margin-right: 10px;">
-    Bonjour, {{ authService.username }}
-  </span>
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/products" class="nav-link">
+            <mat-icon class="nav-icon">directions_car</mat-icon>
+            <span>Véhicules</span>
+          </a>
+        </mat-list-item>
 
-  <!-- Logo à droite seulement pour les ADMIN -->
-  <div *ngIf="authService.roles.includes('ADMIN')" class="logo" style="margin-right: 15px;">
-    <img src="/assets/logo-mon-agence.png" class="logo-img" style="height: 50px;" />
-  </div>
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/clients" class="nav-link">
+            <mat-icon class="nav-icon">people</mat-icon>
+            <span>Clients</span>
+          </a>
+        </mat-list-item>
 
-  <!-- Bouton Logout -->
-  <button mat-raised-button color="accent" (click)="logout()">Logout</button>
-</mat-toolbar>
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/payments" class="nav-link">
+            <mat-icon class="nav-icon">payment</mat-icon>
+            <span>Paiements</span>
+          </a>
+        </mat-list-item>
 
-<!-- Sidebar (menu à gauche) - Visible SEULEMENT pour les ADMIN -->
-<mat-drawer-container *ngIf="authService.authenticated && authService.roles.includes('ADMIN')">
-  <mat-drawer #drawer mode="side" position="start" opened="true">
-    <mat-nav-list>
-      <!-- Dashboard -->
-      <mat-list-item>
-        <button mat-button routerLink="/admin/dashboard">
-          <mat-icon>dashboard</mat-icon> Dashboard
+        <mat-list-item class="nav-item" routerLinkActive="active">
+          <a mat-button routerLink="/admin/team-member" class="nav-link">
+            <mat-icon class="nav-icon">group</mat-icon>
+            <span>Équipe</span>
+          </a>
+        </mat-list-item>
+      </mat-nav-list>
+    </mat-drawer>
+
+    <!-- Contenu principal -->
+    <mat-drawer-content class="main-content">
+      <!-- Navbar -->
+      <mat-toolbar class="navbar">
+        <button mat-icon-button (click)="drawer.toggle()" class="menu-btn">
+          <mat-icon>menu</mat-icon>
         </button>
-      </mat-list-item>
 
-      <!-- Clients -->
-      <mat-list-item>
-        <button mat-button routerLink="/admin/clients">
-          <mat-icon>people</mat-icon> Clients
+        <div class="navbar-content">
+          <span class="page-title">{{ getPageTitle() }}</span>
+
+          <div class="navbar-actions">
+            <!-- Notifications -->
+            <button mat-icon-button class="action-btn">
+              <mat-icon matBadge="3" matBadgeColor="warn">notifications</mat-icon>
+            </button>
+
+            <!-- Profil utilisateur -->
+            <div class="user-profile">
+              <span class="username">{{ authService.username }}</span>
+              <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-btn">
+                <mat-icon>account_circle</mat-icon>
+              </button>
+            </div>
+
+            <mat-menu #userMenu>
+              <button mat-menu-item routerLink="/admin/profile">
+                <mat-icon>person</mat-icon>
+                <span>Profil</span>
+              </button>
+              <button mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Déconnexion</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </mat-toolbar>
+
+      <!-- Contenu des pages -->
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+
+  <!-- Contenu pour non-admin -->
+  <div *ngIf="!authService.authenticated || !authService.roles.includes('ADMIN')" class="user-content">
+    <!-- Navbar simple pour utilisateurs -->
+    <mat-toolbar class="user-navbar">
+      <div class="logo">
+        <img src="/assets/logo-mon-agence.png" alt="Logo" class="logo-img">
+      </div>
+
+      <div class="navbar-content">
+        <button mat-button routerLink="/home">Accueil</button>
+        <span class="spacer"></span>
+
+        <span *ngIf="authService.authenticated" class="username">
+          Bonjour, {{ authService.username }}
+        </span>
+
+        <button mat-raised-button color="primary" (click)="logout()" *ngIf="authService.authenticated">
+          Déconnexion
         </button>
-      </mat-list-item>
+      </div>
+    </mat-toolbar>
 
-      <!-- Payments -->
-      <mat-list-item>
-        <button mat-button routerLink="/admin/payments">
-          <mat-icon>payment</mat-icon> Payments
-        </button>
-      </mat-list-item>
-
-      <!-- Products -->
-      <mat-list-item>
-        <button mat-button routerLink="/admin/products">
-          <mat-icon>inventory</mat-icon> Products
-        </button>
-      </mat-list-item>
-
-      <mat-list-item>
-        <button mat-button routerLink="/admin/team-member">
-          <mat-icon>group</mat-icon> Team Member
-        </button>
-      </mat-list-item>
-
-      <mat-list-item>
-        <button mat-button routerLink="/admin/reservations">
-          <mat-icon>event</mat-icon> Réservations
-        </button>
-      </mat-list-item>
-
-
-
-    </mat-nav-list>
-  </mat-drawer>
-
-  <!-- Contenu principal avec sidebar -->
-  <mat-drawer-content>
-    <div style="min-height: 600px;">
+    <div class="user-page-content">
       <router-outlet></router-outlet>
     </div>
-  </mat-drawer-content>
-</mat-drawer-container>
-
-<!-- Contenu principal sans sidebar pour les USER et les non authentifiés -->
-<div *ngIf="!authService.authenticated || !authService.roles.includes('ADMIN')" style="min-height: 600px;">
-  <router-outlet></router-outlet>
+  </div>
 </div>

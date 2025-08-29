@@ -16,13 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:60141"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:51644"})
 public class ReservationApiController {
 
     @Autowired
@@ -98,7 +96,6 @@ public class ReservationApiController {
             Reservation savedReservation = reservationRepository.save(reservation);
             System.out.println("Réservation créée avec l'ID: " + savedReservation.getId());
 
-            // Créer la réponse avec les détails complets
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Réservation créée avec succès");
@@ -120,8 +117,7 @@ public class ReservationApiController {
     public ResponseEntity<Map<String, Object>> getAllReservations(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "statut", required = false) String statut) {
+            @RequestParam(value = "email", required = false) String email) {
 
         try {
             PageRequest pageRequest = PageRequest.of(page, size,
@@ -171,15 +167,13 @@ public class ReservationApiController {
         }
     }
 
-    // Récupérer les réservations d'un client par email
+    // Récupérer les réservations d'un client
     @GetMapping("/reservations/client/{email}")
     public ResponseEntity<?> getClientReservations(@PathVariable String email) {
         try {
             var reservations = reservationRepository.findByEmailOrderByDateCreationDesc(email);
-
             return ResponseEntity.ok(reservations.stream()
                     .map(this::createReservationResponse).toList());
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("Erreur lors de la récupération des réservations du client"));
@@ -195,7 +189,6 @@ public class ReservationApiController {
 
         try {
             Optional<Reservation> reservationOpt = reservationRepository.findById(id);
-
             if (!reservationOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
@@ -226,17 +219,50 @@ public class ReservationApiController {
         }
     }
 
-    // Supprimer une réservation (admin)
+    // Modifier le statut (version publique)
+    @PutMapping("/reservations/{id}/status")
+    public ResponseEntity<?> updateReservationStatusPublic(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        try {
+            Optional<Reservation> reservationOpt = reservationRepository.findById(id);
+            if (!reservationOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Reservation reservation = reservationOpt.get();
+            String nouveauStatut = request.get("statut");
+
+            try {
+                Reservation.StatutReservation statut = Reservation.StatutReservation.valueOf(nouveauStatut);
+                reservation.setStatut(statut);
+                Reservation saved = reservationRepository.save(reservation);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Statut mis à jour avec succès");
+                response.put("reservation", createReservationResponse(saved));
+
+                return ResponseEntity.ok(response);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Statut invalide: " + nouveauStatut));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Erreur lors de la mise à jour du statut"));
+        }
+    }
+
+    // Supprimer une réservation
     @DeleteMapping("/reservations/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> deleteReservation(@PathVariable Long id) {
         try {
             Optional<Reservation> reservationOpt = reservationRepository.findById(id);
-
             if (!reservationOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-
             reservationRepository.deleteById(id);
 
             Map<String, String> response = new HashMap<>();
@@ -252,7 +278,7 @@ public class ReservationApiController {
         }
     }
 
-    // Vérifier la disponibilité d'un produit
+    // Vérifier disponibilité
     @GetMapping("/reservations/disponibilite/{produitId}")
     public ResponseEntity<?> verifierDisponibilite(
             @PathVariable Long produitId,
@@ -289,7 +315,7 @@ public class ReservationApiController {
         }
     }
 
-    // Méthodes utilitaires
+    // === Méthodes utilitaires ===
     private Map<String, Object> createReservationResponse(Reservation reservation) {
         Map<String, Object> response = new HashMap<>();
         response.put("id", reservation.getId());
@@ -307,7 +333,18 @@ public class ReservationApiController {
         response.put("statutLabel", reservation.getStatut().getLabel());
         response.put("dateCreation", reservation.getDateCreation().toString());
 
-        // Informations du produit
+        // Champs de paiement si présents
+        if (hasField(reservation, "transactionId")) {
+            response.put("transactionId", getFieldValue(reservation, "transactionId"));
+        }
+        if (hasField(reservation, "paymentMethod")) {
+            response.put("paymentMethod", getFieldValue(reservation, "paymentMethod"));
+        }
+        if (hasField(reservation, "paymentStatus")) {
+            response.put("paymentStatus", getFieldValue(reservation, "paymentStatus"));
+        }
+
+        // Produit
         Map<String, Object> produitInfo = new HashMap<>();
         produitInfo.put("id", reservation.getProduit().getId());
         produitInfo.put("nom", reservation.getProduit().getNom());
@@ -326,7 +363,26 @@ public class ReservationApiController {
         return error;
     }
 
-    // DTO pour les requêtes de réservation
+    private boolean hasField(Object obj, String fieldName) {
+        try {
+            obj.getClass().getDeclaredField(fieldName);
+            return true;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
+    }
+
+    private Object getFieldValue(Object obj, String fieldName) {
+        try {
+            java.lang.reflect.Field field = obj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(obj);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // === DTO ===
     public static class ReservationRequest {
         private Long produitId;
         private String dateDepart;
@@ -340,7 +396,6 @@ public class ReservationApiController {
         private Double prixTotal;
         private Integer nombreJours;
 
-        // Getters et Setters
         public Long getProduitId() { return produitId; }
         public void setProduitId(Long produitId) { this.produitId = produitId; }
 

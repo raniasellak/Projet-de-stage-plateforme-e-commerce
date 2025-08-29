@@ -1,173 +1,242 @@
+<!-- dashboard.component.html -->
 <div class="dashboard-container">
 
-  <!-- Header avec bouton refresh -->
+  <!-- Header avec filtres -->
   <div class="dashboard-header">
-    <h2>Dashboard - Location de Voitures</h2>
-    <button mat-raised-button color="primary" (click)="refreshData()" [disabled]="loading">
-      <mat-icon>refresh</mat-icon>
-      Actualiser
-    </button>
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="dashboard-title">Tableau de bord</h1>
+        <p class="dashboard-subtitle">Vue d'ensemble de votre agence de location</p>
+      </div>
+
+      <div class="header-actions">
+        <mat-form-field appearance="outline" class="period-select">
+          <mat-label>Période</mat-label>
+          <mat-select [value]="selectedPeriod" (selectionChange)="onPeriodChange($event.value)">
+            <mat-option value="jour">Aujourd'hui</mat-option>
+            <mat-option value="semaine">Cette semaine</mat-option>
+            <mat-option value="mois">Ce mois</mat-option>
+            <mat-option value="annee">Cette année</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="refreshData()" class="refresh-btn">
+          <mat-icon>refresh</mat-icon>
+          Actualiser
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Loading spinner -->
+  <!-- Chargement -->
   <div *ngIf="loading" class="loading-container">
-    <mat-spinner></mat-spinner>
-    <p>Chargement des données...</p>
+    <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+    <p>Chargement du tableau de bord...</p>
   </div>
 
   <!-- Contenu principal -->
-  <div *ngIf="!loading" class="dashboard-content">
+  <div *ngIf="!loading && dashboardData" class="dashboard-content">
 
-    <!-- Cards de statistiques -->
+    <!-- Cards de statistiques principales -->
     <div class="stats-grid">
-      <mat-card class="stat-card vehicles-card">
-        <mat-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <mat-icon>directions_car</mat-icon>
-            </div>
-            <div class="stat-info">
-              <h3>{{ stats.totalVehicles }}</h3>
-              <p>Total Véhicules</p>
-            </div>
+      <mat-card *ngFor="let card of getStatCards()" class="stat-card" [ngClass]="'stat-card-' + card.color">
+        <mat-card-content class="stat-card-content">
+          <div class="stat-icon">
+            <mat-icon>{{ card.icon }}</mat-icon>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="stat-card available-card">
-        <mat-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <mat-icon>check_circle</mat-icon>
-            </div>
-            <div class="stat-info">
-              <h3>{{ stats.availableVehicles }}</h3>
-              <p>Disponibles</p>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="stat-card rented-card">
-        <mat-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <mat-icon>trending_up</mat-icon>
-            </div>
-            <div class="stat-info">
-              <h3>{{ stats.rentedVehicles }}</h3>
-              <p>En Location</p>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="stat-card revenue-card">
-        <mat-card-content>
-          <div class="stat-content">
-            <div class="stat-icon">
-              <mat-icon>euro_symbol</mat-icon>
-            </div>
-            <div class="stat-info">
-              <h3>{{ stats.monthlyRevenue | currency:'EUR':'symbol':'1.0-0' }}</h3>
-              <p>Revenus du Mois</p>
+          <div class="stat-info">
+            <h3 class="stat-value">{{ card.value }}</h3>
+            <p class="stat-title">{{ card.title }}</p>
+            <div class="stat-trend" *ngIf="card.trend">
+              <mat-icon [class.trend-positive]="card.trend.isPositive" [class.trend-negative]="!card.trend.isPositive">
+                {{ card.trend.isPositive ? 'trending_up' : 'trending_down' }}
+              </mat-icon>
+              <span [class.trend-positive]="card.trend.isPositive" [class.trend-negative]="!card.trend.isPositive">
+                {{ card.trend.value }}% {{ card.trend.period }}
+              </span>
             </div>
           </div>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <!-- Réservations récentes et Alertes -->
-    <div class="main-content">
+    <!-- Graphiques -->
+    <div class="charts-grid">
 
-      <!-- Réservations récentes -->
-      <mat-card class="reservations-card">
+      <!-- Graphique des revenus -->
+      <mat-card class="chart-card">
         <mat-card-header>
           <mat-card-title>
-            <mat-icon>event</mat-icon>
-            Réservations Récentes
+            <mat-icon>trending_up</mat-icon>
+            Évolution des revenus et réservations
           </mat-card-title>
         </mat-card-header>
-
         <mat-card-content>
-          <table mat-table [dataSource]="recentReservations" class="reservations-table">
+          <div class="chart-container">
+            <canvas
+              baseChart
+              [data]="revenueChartData"
+              [options]="revenueChartOptions"
+              type="line">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-            <ng-container matColumnDef="customerName">
+      <!-- Graphique des statuts de réservations -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>pie_chart</mat-icon>
+            Répartition des réservations
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas
+              baseChart
+              [data]="reservationStatusChartData"
+              [options]="statusChartOptions"
+              type="doughnut">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Section des informations détaillées -->
+    <div class="details-grid">
+
+      <!-- Statistiques véhicules -->
+      <mat-card class="details-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>directions_car</mat-icon>
+            État du parc automobile
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="vehicle-stats">
+            <div class="vehicle-stat-item">
+              <div class="vehicle-stat-number">{{ dashboardData.vehicleStats.totalVehicules }}</div>
+              <div class="vehicle-stat-label">Total véhicules</div>
+            </div>
+            <div class="vehicle-stat-item available">
+              <div class="vehicle-stat-number">{{ dashboardData.vehicleStats.vehiculesDisponibles }}</div>
+              <div class="vehicle-stat-label">Disponibles</div>
+            </div>
+            <div class="vehicle-stat-item rented">
+              <div class="vehicle-stat-number">{{ dashboardData.vehicleStats.vehiculesLoues }}</div>
+              <div class="vehicle-stat-label">En location</div>
+            </div>
+            <div class="vehicle-stat-item maintenance">
+              <div class="vehicle-stat-number">{{ dashboardData.vehicleStats.vehiculesEnMaintenance }}</div>
+              <div class="vehicle-stat-label">Maintenance</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Véhicules populaires -->
+      <mat-card class="details-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>star</mat-icon>
+            Véhicules les plus demandés
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="popular-vehicles">
+            <div *ngFor="let vehicle of dashboardData.popularVehicles.slice(0, 5)" class="popular-vehicle-item">
+              <div class="vehicle-image">
+                <img [src]="vehicle.imageUrl" [alt]="vehicle.nom" *ngIf="vehicle.imageUrl">
+                <mat-icon *ngIf="!vehicle.imageUrl">directions_car</mat-icon>
+              </div>
+              <div class="vehicle-info">
+                <h4>{{ vehicle.marque }} {{ vehicle.nom }}</h4>
+                <p>{{ vehicle.nombreReservations }} réservations</p>
+              </div>
+              <div class="vehicle-revenue">
+                <span>{{ formatCurrency(vehicle.revenus) }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Réservations récentes -->
+    <mat-card class="recent-reservations-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>schedule</mat-icon>
+          Réservations récentes
+        </mat-card-title>
+        <mat-card-subtitle>
+          Les 10 dernières réservations
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="dashboardData.recentReservations" class="reservations-table">
+
+            <!-- Colonne Client -->
+            <ng-container matColumnDef="client">
               <th mat-header-cell *matHeaderCellDef>Client</th>
-              <td mat-cell *matCellDef="let reservation">{{ reservation.customerName }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="vehicleModel">
-              <th mat-header-cell *matHeaderCellDef>Véhicule</th>
-              <td mat-cell *matCellDef="let reservation">{{ reservation.vehicleModel }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="startDate">
-              <th mat-header-cell *matHeaderCellDef>Date début</th>
               <td mat-cell *matCellDef="let reservation">
-                {{ reservation.startDate | date:'dd/MM/yyyy HH:mm' }}
+                <div class="client-info">
+                  <div class="client-name">{{ reservation.clientPrenom }} {{ reservation.clientNom }}</div>
+                </div>
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="status">
+            <!-- Colonne Véhicule -->
+            <ng-container matColumnDef="vehicule">
+              <th mat-header-cell *matHeaderCellDef>Véhicule</th>
+              <td mat-cell *matCellDef="let reservation">
+                <div class="vehicle-info">
+                  <strong>{{ reservation.vehicule }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Colonne Dates -->
+            <ng-container matColumnDef="dates">
+              <th mat-header-cell *matHeaderCellDef>Période</th>
+              <td mat-cell *matCellDef="let reservation">
+                <div class="dates-info">
+                  <small>{{ getDatesString(reservation.dateDepart, reservation.dateRetour) }}</small>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Colonne Statut -->
+            <ng-container matColumnDef="statut">
               <th mat-header-cell *matHeaderCellDef>Statut</th>
               <td mat-cell *matCellDef="let reservation">
-                <mat-chip [color]="getStatusColor(reservation.status)" selected>
-                  {{ getStatusText(reservation.status) }}
-                </mat-chip>
+                <mat-chip-set>
+                  <mat-chip [class]="'status-chip-' + getStatusColor(reservation.statut)">
+                    {{ getStatusLabel(reservation.statut) }}
+                  </mat-chip>
+                </mat-chip-set>
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="totalAmount">
+            <!-- Colonne Montant -->
+            <ng-container matColumnDef="montant">
               <th mat-header-cell *matHeaderCellDef>Montant</th>
               <td mat-cell *matCellDef="let reservation">
-                {{ reservation.totalAmount | currency:'EUR':'symbol':'1.2-2' }}
+                <div class="amount">
+                  <strong>{{ formatCurrency(reservation.montant) }}</strong>
+                </div>
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="reservation-row"></tr>
           </table>
-
-          <div *ngIf="recentReservations.length === 0" class="no-data">
-            <p>Aucune réservation récente</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Alertes -->
-      <mat-card class="alerts-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>warning</mat-icon>
-            Alertes ({{ alerts.length }})
-          </mat-card-title>
-        </mat-card-header>
-
-        <mat-card-content>
-          <div *ngIf="alerts.length === 0" class="no-alerts">
-            <mat-icon color="primary">check_circle</mat-icon>
-            <p>Aucune alerte</p>
-          </div>
-
-          <div *ngFor="let alert of alerts" class="alert-item">
-            <mat-chip [color]="getAlertColor(alert.priority)" selected>
-              <mat-icon matChipAvatar>{{ alert.type === 'maintenance' ? 'build' : 'schedule' }}</mat-icon>
-              <strong>{{ alert.vehicleModel }}</strong>
-            </mat-chip>
-            <p>{{ alert.message }}</p>
-            <small>{{ alert.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-    </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
-
-  <!-- Message d'erreur -->
-  <div *ngIf="error && !loading" class="error-message">
-    <mat-icon color="warn">error</mat-icon>
-    <p>{{ error }}</p>
-  </div>
-
 </div>
