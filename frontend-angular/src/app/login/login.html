@@ -1,30 +1,71 @@
-<div class="container">
-  <!-- Affichage debug -->
-  {{ loginFormGroup.value | json }}
+<div class="container" #container id="container">
+  <!-- Formulaire d'inscription -->
+  <div class="form-container sign-up-container">
+    <form [formGroup]="registerFormGroup" (ngSubmit)="register()">
+      <h1>Créer un compte</h1>
+      <div class="social-container">
+        <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+        <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+      <span>ou utilisez votre email pour l'inscription</span>
+      <input
+        type="text"
+        placeholder="Nom"
+        formControlName="name"
+        [class.error]="registerFormGroup.get('name')?.invalid && registerFormGroup.get('name')?.touched" />
+      <input
+        type="email"
+        placeholder="Email"
+        formControlName="email"
+        [class.error]="registerFormGroup.get('email')?.invalid && registerFormGroup.get('email')?.touched" />
+      <input
+        type="password"
+        placeholder="Mot de passe"
+        formControlName="password"
+        [class.error]="registerFormGroup.get('password')?.invalid && registerFormGroup.get('password')?.touched" />
+      <button type="submit" [disabled]="!registerFormGroup.valid">S'inscrire</button>
+    </form>
+  </div>
 
-  <form [formGroup]="loginFormGroup" (ngSubmit)="login()">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Authentication</mat-card-title>
-      </mat-card-header>
+  <!-- Formulaire de connexion -->
+  <div class="form-container sign-in-container">
+    <form [formGroup]="loginFormGroup" (ngSubmit)="login()">
+      <h1>Se connecter</h1>
+      <div class="social-container">
+        <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+        <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+      <span>ou utilisez votre compte</span>
+      <input
+        type="text"
+        placeholder="Nom d'utilisateur ou Email"
+        formControlName="username"
+        [class.error]="loginFormGroup.get('username')?.invalid && loginFormGroup.get('username')?.touched" />
+      <input
+        type="password"
+        placeholder="Mot de passe"
+        formControlName="password"
+        [class.error]="loginFormGroup.get('password')?.invalid && loginFormGroup.get('password')?.touched" />
+      <a href="#">Mot de passe oublié?</a>
+      <button type="submit" [disabled]="!loginFormGroup.valid">Se connecter</button>
+    </form>
+  </div>
 
-      <mat-divider></mat-divider>
-
-      <mat-card-content>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Username or Email</mat-label>
-          <input matInput formControlName="username" autocomplete="username" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="password" autocomplete="current-password" />
-        </mat-form-field>
-      </mat-card-content>
-
-      <mat-card-actions align="end">
-        <button mat-raised-button color="primary" type="submit">Login</button>
-      </mat-card-actions>
-    </mat-card>
-  </form>
+  <!-- Panneau de superposition -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <h1>Bon retour!</h1>
+        <p>Pour rester connecté avec nous, veuillez vous connecter avec vos informations personnelles</p>
+        <button class="ghost" (click)="showSignIn()">Se connecter</button>
+      </div>
+      <div class="overlay-panel overlay-right">
+        <h1>Bonjour, ami!</h1>
+        <p>Rejoignez-nous et démarrez votre aventure automobile dès aujourd'hui.</p>
+        <button class="ghost" (click)="showSignUp()">S'inscrire</button>
+      </div>
+    </div>
+  </div>
 </div>

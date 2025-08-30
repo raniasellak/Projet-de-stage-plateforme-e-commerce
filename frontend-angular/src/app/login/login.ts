@@ -1,11 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Authentication } from '../services/authentication';
 
@@ -15,46 +10,75 @@ import { Authentication } from '../services/authentication';
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatDividerModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule
+    ReactiveFormsModule
   ],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class Login implements OnInit {
-  public loginFormGroup!: FormGroup;
+  @ViewChild('container', { static: true }) container!: ElementRef;
 
-  constructor(private fb: FormBuilder, private authService: Authentication, private router: Router) {}
+  public loginFormGroup!: FormGroup;
+  public registerFormGroup!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: Authentication,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loginFormGroup = this.fb.group({
-      username: this.fb.control(''),
-      password: this.fb.control('')
+      username: this.fb.control('', [Validators.required]),
+      password: this.fb.control('', [Validators.required])
+    });
+
+    this.registerFormGroup = this.fb.group({
+      name: this.fb.control('', [Validators.required]),
+      email: this.fb.control('', [Validators.required, Validators.email]),
+      password: this.fb.control('', [Validators.required, Validators.minLength(6)])
     });
   }
 
- login() {
-   let username = this.loginFormGroup.value.username;
-   let password = this.loginFormGroup.value.password;
+  // Méthode pour basculer vers le panneau d'inscription
+  showSignUp() {
+    this.container.nativeElement.classList.add("right-panel-active");
+  }
 
-   let auth = this.authService.login(username, password);
+  // Méthode pour basculer vers le panneau de connexion
+  showSignIn() {
+    this.container.nativeElement.classList.remove("right-panel-active");
+  }
 
-   if (auth === true) {
-     const roles = this.authService.roles;
+  // Votre logique de connexion existante
+  login() {
+    if (this.loginFormGroup.valid) {
+      let username = this.loginFormGroup.value.username;
+      let password = this.loginFormGroup.value.password;
 
-     if (roles.includes('ADMIN')) {
-       this.router.navigateByUrl('/admin/dashboard');
-     } else if (roles.includes('Client')) {
-       this.router.navigateByUrl('/home');
-     } else {
-       this.router.navigateByUrl('/');
-     }
-   } else {
-     alert('Identifiants incorrects');
-   }
- }
- }
+      let auth = this.authService.login(username, password);
+
+      if (auth === true) {
+        const roles = this.authService.roles;
+
+        if (roles.includes('ADMIN')) {
+          this.router.navigateByUrl('/admin/dashboard');
+        } else if (roles.includes('Client')) {
+          this.router.navigateByUrl('/home');
+        } else {
+          this.router.navigateByUrl('/');
+        }
+      } else {
+        alert('Identifiants incorrects');
+      }
+    }
+  }
+
+  // Méthode pour l'inscription (frontend seulement pour l'instant)
+  register() {
+    if (this.registerFormGroup.valid) {
+      console.log('Données d\'inscription:', this.registerFormGroup.value);
+      alert('Fonctionnalité d\'inscription à implémenter côté backend');
+    }
+  }
+}
