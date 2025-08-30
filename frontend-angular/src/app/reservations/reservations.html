@@ -1,45 +1,171 @@
-<h2>Liste des réservations</h2>
+<div class="container">
+  <div class="reservations-card fade-in">
+    <!-- En-tête -->
+    <div class="reservations-header">
+      <div class="header-content">
+        <h2 class="reservations-title">
+          <i class="fas fa-calendar-check icon"></i>
+          Gestion des Réservations
+        </h2>
+        <p class="reservations-subtitle">
+          Gérez et suivez toutes les réservations de votre plateforme
+        </p>
 
-<table border="1" cellpadding="8" cellspacing="0">
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>Client</th>
-    <th>Produit</th>
-    <th>Date</th>
-    <th>Prix Total</th>
-    <th>Statut</th>
-    <th>Actions</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr *ngFor="let r of reservations">
-    <td>{{ r.id }}</td>
-    <td>{{ r.nom }} {{ r.prenom }}</td>
-    <td>{{ r.produit.nom }} ({{ r.produit.marque }})</td>
-    <td>{{ r.dateDepart }} → {{ r.dateRetour }}</td>
-    <td>{{ r.prixTotal }} DH</td>
-    <td>{{ r.statutLabel }}</td>
-    <td>
-      <button (click)="changerStatut(r.id, 'CONFIRMEE')">Confirmer</button>
-      <button (click)="changerStatut(r.id, 'ANNULEE')">Annuler</button>
-      <button (click)="supprimer(r.id)">Supprimer</button>
-    </td>
-  </tr>
-  </tbody>
-</table>
+        <!-- Statistiques dynamiques -->
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-number">{{ totalItems }}</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ getReservationsByStatus('CONFIRMEE').length }}</div>
+            <div class="stat-label">Confirmées</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ getReservationsByStatus('EN_ATTENTE').length }}</div>
+            <div class="stat-label">En attente</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ getReservationsByStatus('ANNULEE').length }}</div>
+            <div class="stat-label">Annulées</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- Pagination -->
-<div style="margin-top: 20px; text-align: center;">
-  <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
-    ⬅ Précédent
-  </button>
+    <!-- Contenu principal -->
+    <div class="card-content">
+      <!-- Filtres -->
+      <div class="filters-section">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label class="filter-label">Recherche</label>
+            <input
+              type="text"
+              class="filter-input"
+              placeholder="Nom du client, produit..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              style="width: 250px;">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Statut</label>
+            <select
+              class="filter-select"
+              [(ngModel)]="statusFilter"
+              (change)="onFilterChange()">
+              <option value="">Tous les statuts</option>
+              <option value="EN_ATTENTE">En attente</option>
+              <option value="CONFIRMEE">Confirmée</option>
+              <option value="ANNULEE">Annulée</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Date</label>
+            <input
+              type="date"
+              class="filter-input"
+              [(ngModel)]="dateFilter"
+              (change)="onFilterChange()">
+          </div>
+        </div>
+      </div>
 
-  <span style="margin: 0 15px;">
-    Page {{ currentPage + 1 }} / {{ totalPages }}
-  </span>
+      <!-- État de chargement -->
+      <div class="loading-container" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p class="loading-text">Chargement des réservations...</p>
+      </div>
 
-  <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage + 1 >= totalPages">
-    Suivant ➡
-  </button>
+      <!-- État vide -->
+      <div class="empty-state" *ngIf="!isLoading && reservations.length === 0">
+        <i class="fas fa-calendar-times empty-icon"></i>
+        <h3 class="empty-title">Aucune réservation trouvée</h3>
+        <p class="empty-message">Il n'y a pas encore de réservations à afficher.</p>
+      </div>
+
+      <!-- Table des réservations -->
+      <div class="table-container" *ngIf="!isLoading && reservations.length > 0">
+        <table class="reservations-table">
+          <thead>
+          <tr>
+            <th><i class="fas fa-hashtag icon"></i>ID</th>
+            <th><i class="fas fa-user icon"></i>Client</th>
+            <th><i class="fas fa-car icon"></i>Produit</th>
+            <th><i class="fas fa-calendar icon"></i>Période</th>
+            <th><i class="fas fa-money-bill-wave icon"></i>Prix Total</th>
+            <th><i class="fas fa-info-circle icon"></i>Statut</th>
+            <th><i class="fas fa-cogs icon"></i>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let r of reservations; trackBy: trackByReservationId">
+            <td><strong>#{{ r.id.toString().padStart(3, '0') }}</strong></td>
+            <td class="client-info">{{ r.nom }} {{ r.prenom }}</td>
+            <td class="product-info">
+              {{ r.produit.nom }}<br>
+              <span class="product-brand">({{ r.produit.marque }})</span>
+            </td>
+            <td class="date-range">
+              {{ formatDate(r.dateDepart) }}<br>
+              → {{ formatDate(r.dateRetour) }}
+            </td>
+            <td class="price">{{ r.prixTotal }} DH</td>
+            <td>
+                <span [class]="getStatusClass(r.statutLabel)">
+                  <i [class]="getStatusIcon(r.statutLabel)"></i>
+                  {{ r.statutLabel }}
+                </span>
+            </td>
+            <td class="actions-cell">
+              <button
+                class="action-btn btn-confirm"
+                (click)="changerStatut(r.id, 'CONFIRMEE')"
+                [disabled]="r.statutLabel === 'Confirmée'">
+                <i class="fas fa-check"></i>
+                Confirmer
+              </button>
+              <button
+                class="action-btn btn-cancel"
+                (click)="changerStatut(r.id, 'ANNULEE')"
+                [disabled]="r.statutLabel === 'Annulée'">
+                <i class="fas fa-times"></i>
+                Annuler
+              </button>
+              <button
+                class="action-btn btn-delete"
+                (click)="supprimer(r.id)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="!isLoading && totalPages > 1">
+        <button
+          class="pagination-btn"
+          (click)="goToPage(currentPage - 1)"
+          [disabled]="currentPage === 0">
+          <i class="fas fa-chevron-left"></i>
+          Précédent
+        </button>
+
+        <div class="pagination-info">
+          <i class="fas fa-info-circle"></i>
+          Page {{ currentPage + 1 }} / {{ totalPages }} ({{ totalItems }} réservations)
+        </div>
+
+        <button
+          class="pagination-btn"
+          (click)="goToPage(currentPage + 1)"
+          [disabled]="currentPage + 1 >= totalPages">
+          Suivant
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
