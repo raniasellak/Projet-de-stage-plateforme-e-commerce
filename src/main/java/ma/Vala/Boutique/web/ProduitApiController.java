@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:4200","http://localhost:53402"})
+@CrossOrigin(origins = {"http://localhost:4200","http://localhost:49902"})
 public class ProduitApiController {
 
     @Autowired

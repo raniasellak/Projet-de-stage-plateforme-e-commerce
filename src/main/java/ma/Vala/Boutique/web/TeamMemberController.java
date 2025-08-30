@@ -16,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/team-members")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:53402"})
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:53751"})
 
 public class TeamMemberController {
     private final TeamMemberService teamMemberService;

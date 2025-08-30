@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController  // ← API seulement
 @RequestMapping("/api/auth")  // ← Endpoints d'authentification
-@CrossOrigin(origins = "http://localhost:4200")  // ← Autorise Angular
+@CrossOrigin(origins = {"http://localhost:4200", "http://localhost:49902"})  // ← Autorise Angular
 public class SecurityApiController {
 
     // 👤 RÉCUPÉRER LES INFOS DE L'UTILISATEUR CONNECTÉ

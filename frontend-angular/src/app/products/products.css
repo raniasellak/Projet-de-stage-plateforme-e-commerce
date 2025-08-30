@@ -1,200 +1,662 @@
-/* Conteneur principal */
-.container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* Reset et styles de base */
+* {
+  box-sizing: border-box;
 }
 
-/* Card */
+/* Container principal */
+.container {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+/* Carte principale */
 mat-card {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  overflow: hidden;
   margin-bottom: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* En-tête de la carte */
+mat-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin: -16px -16px 20px -16px;
+  padding: 25px;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+}
+
+mat-card-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="0.5" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="0.3" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.4" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.1;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 1.8em;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+mat-card-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 8px;
+  font-size: 1em;
+  font-weight: 300;
+  position: relative;
+  z-index: 1;
+}
+
+/* Actions en-tête */
+.card-header-actions {
+  margin-top: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-header-actions button {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.card-header-actions button:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* Divider */
+mat-divider {
+  border-top-color: #e9ecef;
+}
+
+/* Contenu de la carte */
+mat-card-content {
+  padding: 25px !important;
+}
+
+/* Champ de recherche amélioré */
+mat-form-field {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 25px;
+}
+
+.mat-mdc-form-field {
+  border-radius: 8px;
+}
+
+.mat-mdc-form-field .mat-mdc-form-field-outline {
+  border-radius: 8px;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
+  color: #667eea;
 }
 
 /* Conteneur du tableau */
 .example-container {
   margin-top: 20px;
   overflow-x: auto;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Tableau */
+/* Tableau Material */
 mat-table {
   width: 100%;
   background: white;
+  min-width: 1000px;
 }
 
-mat-table th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-  color: #424242;
+/* En-têtes du tableau */
+mat-header-cell {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  padding: 18px 12px !important;
+  font-weight: 600 !important;
+  color: #495057 !important;
+  border-bottom: 2px solid #dee2e6 !important;
+  position: relative;
+  font-size: 0.95em;
 }
 
-mat-table td, mat-table th {
-  padding: 12px 8px;
-  border-bottom: 1px solid #e0e0e0;
+mat-header-cell:first-child {
+  border-top-left-radius: 12px;
 }
 
-mat-table tr:hover {
-  background-color: #f9f9f9;
-  transition: background-color 0.3s ease;
+mat-header-cell:last-child {
+  border-top-right-radius: 12px;
 }
 
-/* Images produit */
+/* Cellules du tableau */
+mat-cell {
+  padding: 16px 12px !important;
+  border-bottom: 1px solid #f1f3f4 !important;
+  vertical-align: middle;
+  font-size: 0.9em;
+}
+
+/* Lignes du tableau */
+mat-row {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+mat-row:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+mat-row:last-child mat-cell {
+  border-bottom: none !important;
+}
+
+/* Images produit améliorées */
 .product-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
+  transition: transform 0.3s ease;
+}
+
+.product-img:hover {
+  transform: scale(1.05);
 }
 
 .no-image-icon {
-  color: #bdbdbd;
-  font-size: 24px;
+  color: #bdbdbd !important;
+  font-size: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
 }
 
-/* Nom du produit */
+/* Nom du produit amélioré */
 .product-name {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .product-name strong {
-  font-size: 14px;
-  color: #212121;
-  margin-bottom: 2px;
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .product-name small {
   font-size: 12px;
-  color: #757575;
+  color: #7f8c8d;
+  font-style: italic;
+  font-weight: 400;
 }
 
-/* Prix */
+/* Prix amélioré */
 .price {
-  font-weight: 600;
-  color: #2e7d32;
+  font-weight: 700;
+  color: #27ae60;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.price::before {
+  content: '💰';
   font-size: 14px;
 }
 
-/* Description */
+/* Description améliorée */
 .description {
   font-size: 13px;
-  color: #616161;
+  color: #555;
   line-height: 1.4;
+  max-width: 200px;
+  display: block;
 }
 
-/* Badge couleur */
+/* Badge couleur amélioré */
 .color-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
   color: white;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  border: 2px solid rgba(255,255,255,0.3);
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 70px;
+  justify-content: center;
 }
 
-/* Stock */
+/* Stock avec indicateurs visuels */
 .stock {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
   font-size: 12px;
+  text-align: center;
+  min-width: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .stock-low {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef5350;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.stock-low::before {
+  content: '⚠️';
+  font-size: 10px;
 }
 
 .stock-medium {
-  background-color: #fff3e0;
-  color: #ef6c00;
-  border: 1px solid #ff9800;
+  background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+  color: #8b4513;
+  box-shadow: 0 2px 8px rgba(254, 202, 87, 0.3);
+}
+
+.stock-medium::before {
+  content: '📦';
+  font-size: 10px;
 }
 
 .stock-high {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #4caf50;
+  background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(72, 219, 251, 0.3);
 }
 
-/* Badge catégorie */
+.stock-high::before {
+  content: '✅';
+  font-size: 10px;
+}
+
+/* Badge catégorie amélioré */
 .category-badge {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 /* Valeurs nulles */
 .no-value {
   color: #bdbdbd;
   font-style: italic;
+  font-size: 13px;
 }
 
-/* States de chargement et données vides */
+/* Actions container */
+.actions-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.actions-container button {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.actions-container button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+/* Boutons Material personnalisés */
+.mat-mdc-raised-button.mat-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+.mat-mdc-icon-button.mat-primary {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%) !important;
+  color: white !important;
+}
+
+.mat-mdc-icon-button.mat-warn {
+  background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%) !important;
+  color: white !important;
+}
+
+/* States de chargement et données vides améliorés */
 .loading-container {
-  text-align: center;
-  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
   color: #666;
+  font-size: 1.1em;
+  font-weight: 500;
 }
 
 .no-data {
   text-align: center;
-  padding: 40px;
-  color: #666;
+  padding: 60px 20px;
+  color: #6c757d;
 }
 
 .no-data mat-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 16px;
-  color: #bdbdbd;
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  margin-bottom: 20px !important;
+  color: #dee2e6 !important;
 }
 
-/* Pagination */
+.no-data p {
+  font-size: 1.2em;
+  color: #6c757d;
+  margin-top: 10px;
+}
+
+/* Pagination améliorée */
 mat-paginator {
-  border-top: 1px solid #e0e0e0;
-  background-color: #fafafa;
+  border-top: 1px solid #e9ecef !important;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+  border-radius: 0 0 12px 12px;
+  padding: 10px 0;
 }
 
-/* Champ de recherche */
+/* Formulaire d'ajout */
+.add-form-container {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  border-left: 4px solid #667eea;
+  position: relative;
+  z-index: 1;
+}
+
+/* Champ de recherche amélioré */
 mat-form-field {
   width: 100%;
   max-width: 400px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-/* Responsive */
+.mat-mdc-form-field .mat-mdc-form-field-outline {
+  border-radius: 8px !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
+  color: #667eea !important;
+}
+
+.mat-mdc-form-field .mat-mdc-form-field-outline-thick {
+  border-width: 2px !important;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Amélioration des tooltips */
+.mat-mdc-tooltip {
+  background: #2c3e50 !important;
+  color: white !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+}
+
+/* Effets sur les éléments interactifs */
+.product-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 0%, rgba(102, 126, 234, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-image:hover::after {
+  opacity: 1;
+}
+
+/* Snackbar personnalisé */
+.success-snackbar {
+  background: #27ae60 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background: #e74c3c !important;
+  color: white !important;
+}
+
+/* Badge d'année */
+.year-badge {
+  background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .container {
+    margin: 15px;
+    padding: 0 15px;
+  }
+
+  mat-table {
+    min-width: 900px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
-    padding: 10px;
+    margin: 10px;
+    padding: 0 10px;
+  }
+
+  mat-card-header {
+    padding: 20px;
+  }
+
+  mat-card-title {
+    font-size: 1.5em;
+  }
+
+  mat-card-content {
+    padding: 20px !important;
   }
 
   mat-table {
     font-size: 12px;
+    min-width: 700px;
   }
 
-  mat-table td, mat-table th {
-    padding: 8px 4px;
+  mat-header-cell,
+  mat-cell {
+    padding: 12px 8px !important;
+  }
+
+  .product-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .actions-container {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .actions-container button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px !important;
+  }
+
+  .card-header-actions button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  mat-card-title {
+    font-size: 1.3em;
+  }
+
+  mat-table {
+    min-width: 600px;
+  }
+
+  mat-header-cell,
+  mat-cell {
+    padding: 8px 6px !important;
+    font-size: 11px;
   }
 
   .product-image {
     width: 40px;
     height: 40px;
+  }
+
+  .product-name strong {
+    font-size: 12px;
+  }
+
+  .product-name small {
+    font-size: 10px;
+  }
+
+  .price {
+    font-size: 13px;
+  }
+}
+
+/* Amélioration des icônes Material */
+mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.card-header-actions mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 8px;
+}
+
+/* Effet de focus amélioré */
+button:focus,
+mat-icon-button:focus {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px !important;
+}
+
+/* Animation d'entrée pour les lignes */
+mat-row {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

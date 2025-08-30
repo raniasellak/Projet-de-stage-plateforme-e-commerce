@@ -1,8 +1,14 @@
-<div class="container">
+<div class="container fade-in">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Liste des produits</mat-card-title>
-      <mat-card-subtitle>{{ totalItems }} produit(s) trouvé(s)</mat-card-subtitle>
+      <mat-card-title>
+        <mat-icon>inventory_2</mat-icon>
+        Liste des produits
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{ totalItems }} produit(s) trouvé(s)
+        <span *ngIf="keyword"> • Filtrage par: "{{ keyword }}"</span>
+      </mat-card-subtitle>
 
       <!-- Bouton Ajouter Produit -->
       <div class="card-header-actions">
@@ -11,45 +17,64 @@
           {{ showAddForm ? 'Fermer le formulaire' : 'Ajouter un produit' }}
         </button>
       </div>
-      <div *ngIf="showAddForm" style="margin-top: 20px;">
+
+      <!-- Formulaire d'ajout -->
+      <div *ngIf="showAddForm" class="add-form-container">
         <app-add-product (productAdded)="onProductAdded()"></app-add-product>
       </div>
-
-
     </mat-card-header>
+
     <mat-divider></mat-divider>
 
     <mat-card-content>
-      <!-- Champ de recherche -->
+      <!-- Champ de recherche amélioré -->
       <mat-form-field appearance="outline">
-        <mat-label>Filter</mat-label>
-        <input matInput (keyup)="filterProducts($event)" [value]="keyword">
+        <mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          Rechercher un produit...
+        </mat-label>
+        <input matInput
+               (keyup)="filterProducts($event)"
+               [value]="keyword"
+               placeholder="Nom, marque, catégorie...">
+        <mat-hint>Tapez pour filtrer les produits en temps réel</mat-hint>
       </mat-form-field>
 
       <!-- Indicateur de chargement -->
       <div *ngIf="isLoading" class="loading-container">
+        <div class="spinner"></div>
         <p>Chargement des produits...</p>
       </div>
 
       <!-- Message si aucun produit -->
       <div *ngIf="!isLoading && dataSource.data.length === 0" class="no-data">
-        <mat-icon>inbox</mat-icon>
-        <p>Aucun produit trouvé</p>
+        <mat-icon>inventory</mat-icon>
+        <h3>Aucun produit trouvé</h3>
+        <p *ngIf="keyword">Aucun résultat pour "{{ keyword }}"</p>
+        <p *ngIf="!keyword">Commencez par ajouter votre premier produit</p>
       </div>
 
       <!-- Conteneur du tableau -->
-      <div *ngIf="!isLoading && dataSource.data.length > 0" class="example-container mat-elevation-z1">
-        <mat-table matSort [dataSource]="dataSource">
+      <div *ngIf="!isLoading && dataSource.data.length > 0" class="example-container mat-elevation-z2">
+        <mat-table matSort [dataSource]="dataSource" [trackBy]="trackByProductId">
 
           <!-- ID -->
           <ng-container matColumnDef="id">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> ID </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">tag</mat-icon>
+              ID
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <strong>#{{ element.id.toString().padStart(3, '0') }}</strong>
+            </mat-cell>
           </ng-container>
 
           <!-- Nom -->
           <ng-container matColumnDef="nom">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Nom </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">label</mat-icon>
+              Nom
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <div class="product-name">
                 <strong>{{element.nom}}</strong>
@@ -60,7 +85,10 @@
 
           <!-- Prix -->
           <ng-container matColumnDef="prix">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Prix </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">attach_money</mat-icon>
+              Prix
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <span class="price">{{element.prix | currency:'MAD':'symbol':'1.2-2'}}</span>
             </mat-cell>
@@ -68,9 +96,14 @@
 
           <!-- Description -->
           <ng-container matColumnDef="description">
-            <mat-header-cell *matHeaderCellDef> Description </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef>
+              <mat-icon style="margin-right: 8px;">description</mat-icon>
+              Description
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
-              <span class="description" [title]="element.description">
+              <span class="description"
+                    [matTooltip]="element.description"
+                    matTooltipPosition="above">
                 {{ element.description | slice:0:50 }}{{ element.description && element.description.length > 50 ? '...' : '' }}
               </span>
             </mat-cell>
@@ -78,33 +111,44 @@
 
           <!-- Couleur -->
           <ng-container matColumnDef="couleur">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Couleur </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">palette</mat-icon>
+              Couleur
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <span *ngIf="element.couleur; else noCouleur"
                     class="color-badge"
                     [style.background-color]="getColorValue(element.couleur)">
-                {{ element.couleur }}
+                🎨 {{ element.couleur }}
               </span>
               <ng-template #noCouleur>
-                <span class="no-value">-</span>
+                <span class="no-value">Non spécifiée</span>
               </ng-template>
             </mat-cell>
           </ng-container>
 
           <!-- Année -->
           <ng-container matColumnDef="annee">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Année </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">event</mat-icon>
+              Année
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
-              <span *ngIf="element.annee; else noAnnee">{{ element.annee }}</span>
+              <span *ngIf="element.annee; else noAnnee" class="year-badge">
+                📅 {{ element.annee }}
+              </span>
               <ng-template #noAnnee>
-                <span class="no-value">-</span>
+                <span class="no-value">Non spécifiée</span>
               </ng-template>
             </mat-cell>
           </ng-container>
 
           <!-- Quantité -->
           <ng-container matColumnDef="quantite">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Quantité </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">inventory_2</mat-icon>
+              Stock
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <span class="stock" [ngClass]="{
                 'stock-low': element.quantite < 5,
@@ -118,7 +162,10 @@
 
           <!-- Catégorie -->
           <ng-container matColumnDef="categorie">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Catégorie </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">category</mat-icon>
+              Catégorie
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <span class="category-badge">{{ element.categorie }}</span>
             </mat-cell>
@@ -126,16 +173,32 @@
 
           <!-- Marque -->
           <ng-container matColumnDef="marque">
-            <mat-header-cell *matHeaderCellDef mat-sort-header> Marque </mat-header-cell>
-            <mat-cell *matCellDef="let element"> {{ element.marque }} </mat-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-icon style="margin-right: 8px;">business</mat-icon>
+              Marque
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span *ngIf="element.marque; else noMarque">{{ element.marque }}</span>
+              <ng-template #noMarque>
+                <span class="no-value">Non spécifiée</span>
+              </ng-template>
+            </mat-cell>
           </ng-container>
 
-          <!-- Image URL -->
+          <!-- Image -->
           <ng-container matColumnDef="imageUrl">
-            <mat-header-cell *matHeaderCellDef> Image </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef>
+              <mat-icon style="margin-right: 8px;">image</mat-icon>
+              Image
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <div class="product-image">
-                <img [src]="element.imageUrl" [alt]="element.nom" class="product-img" />
+                <img *ngIf="element.imageUrl; else noImage"
+                     [src]="getImageUrl(element.imageUrl)"
+                     [alt]="element.nom"
+                     class="product-img"
+                     [matTooltip]="'Image de ' + element.nom"
+                     matTooltipPosition="above" />
                 <ng-template #noImage>
                   <mat-icon class="no-image-icon">image_not_supported</mat-icon>
                 </ng-template>
@@ -143,16 +206,29 @@
             </mat-cell>
           </ng-container>
 
-          <!-- NOUVELLE COLONNE ACTIONS -->
+          <!-- Actions améliorées -->
           <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+            <mat-header-cell *matHeaderCellDef>
+              <mat-icon style="margin-right: 8px;">settings</mat-icon>
+              Actions
+            </mat-header-cell>
             <mat-cell *matCellDef="let element">
               <div class="actions-container">
+                <!-- Bouton Voir -->
+                <button mat-icon-button
+                        color="accent"
+                        (click)="viewProduct(element)"
+                        matTooltip="Voir les détails"
+                        matTooltipPosition="above">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+
                 <!-- Bouton Modifier -->
                 <button mat-icon-button
                         color="primary"
                         (click)="editProduct(element)"
-                        matTooltip="Modifier le produit">
+                        matTooltip="Modifier le produit"
+                        matTooltipPosition="above">
                   <mat-icon>edit</mat-icon>
                 </button>
 
@@ -160,7 +236,8 @@
                 <button mat-icon-button
                         color="warn"
                         (click)="deleteProduct(element)"
-                        matTooltip="Supprimer le produit">
+                        matTooltip="Supprimer le produit"
+                        matTooltipPosition="above">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -169,15 +246,18 @@
 
           <!-- Header and Row declarations -->
           <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"
+                   (click)="viewProduct(row)"
+                   [matTooltip]="'Cliquez pour voir les détails de ' + row.nom"
+                   matTooltipPosition="above"></mat-row>
 
         </mat-table>
 
-        <!-- Paginator -->
+        <!-- Paginator amélioré -->
         <mat-paginator
           [length]="totalItems"
           [pageSize]="pageSize"
-          [pageSizeOptions]="[5, 10, 25]"
+          [pageSizeOptions]="[5, 10, 25, 50]"
           [pageIndex]="currentPage"
           (page)="onPageChange($event)"
           showFirstLastButtons>
